@@ -6,7 +6,6 @@ public class MovingHex : MonoBehaviour
     private Hexagon hexagon_; // actual position
     private PolygonCollider2D collider;
     private Rigidbody2D rb2D;
-    private SpriteRenderer renderer;
 
     public Hexagon hexagon
     {
@@ -27,9 +26,7 @@ public class MovingHex : MonoBehaviour
         Debug.Log("MovingHex.Awake");
         collider = GetComponent<PolygonCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
-        renderer = GetComponent<SpriteRenderer>();
         IslandManager.Inst.AddMovingHex(this);
-        renderer.color = UnityEngine.Random.ColorHSV();
     }
 
     // Use this for initialization
@@ -49,7 +46,6 @@ public class MovingHex : MonoBehaviour
             //Vector3 newPos = Vector3.MoveTowards(transform.position, dest, 3f * Time.deltaTime);
             Vector3 newPos = Vector3.Slerp(transform.position, dest, 3f * Time.deltaTime);
             transform.position = newPos;
-            GetComponent<SpriteRenderer>().sortingOrder = -Mathf.FloorToInt(newPos.y * 100f);
         }
     }
 }

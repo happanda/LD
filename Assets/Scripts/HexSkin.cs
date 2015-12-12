@@ -1,15 +1,17 @@
 ﻿using UnityEngine;
+using Random = UnityEngine.Random;
 using System.Collections;
 
 public class HexSkin : MonoBehaviour
 {
-    public GameObject spritePrefab;
+    public Sprite[] spritePrefabs;
     private SpriteRenderer renderer;
 
     void Awake()
     {
         renderer = GetComponent<SpriteRenderer>();
-        renderer.sprite = spritePrefab.GetComponent<SpriteRenderer>().sprite;
+        var spritePrefab = spritePrefabs[Random.Range(0, spritePrefabs.Length)];
+        renderer.sprite = spritePrefab;
     }
 
     // Use this for initialization
@@ -20,5 +22,6 @@ public class HexSkin : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        renderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
     }
 }
