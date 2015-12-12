@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 public class Hex : MonoBehaviour
 {
-    public const float Size = 0.51f;
+    public const float Size = 0.85f;
+    public const float Yscale = 0.6f;
 }
 
 public class Point

@@ -23,7 +23,7 @@ public class IslandManager : MonoBehaviour
     void InitIsland()
     {
         boardHolder = new GameObject("IslandStuff").transform;
-        layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * 0.8f), new Point(0f, 0f));
+        layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * Hex.Yscale), new Point(0f, 0f));
         map.Clear();
         hexes.Clear();
 
