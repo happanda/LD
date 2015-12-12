@@ -32,9 +32,23 @@ struct Hexagon
         this.r = r;
         this.s = s;
     }
+    public Hexagon(int q, int r)
+    {
+        this.q = q;
+        this.r = r;
+        this.s = -q - r;
+    }
     public readonly int q;
     public readonly int r;
     public readonly int s;
+
+    public Hexagon Rotate(bool left)
+    {
+        if (left)
+            return new Hexagon(r, s);
+        else
+            return new Hexagon(s, q);
+    }
 
     static public Hexagon Add(Hexagon a, Hexagon b)
     {
