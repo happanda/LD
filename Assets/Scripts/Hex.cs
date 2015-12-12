@@ -6,14 +6,9 @@ using System.Collections.Generic;
 public class Hex : MonoBehaviour
 {
     public const float Size = 0.51f;
-    public const float Width = Size * 2f;
-    public const float Height = Width * 0.8660254037844f;//Mathf.Sqrt(3f) / 2f;
-    public const float Xshift = Width * 0.75f;
-    public const float Yshift = Height * 0.5f;
-
 }
 
-struct Point
+public class Point
 {
     public Point(float x, float y)
     {
@@ -24,7 +19,7 @@ struct Point
     public readonly float y;
 }
 
-struct Hexagon
+public class Hexagon : System.IEquatable<Hexagon>
 {
     public Hexagon(int q, int r, int s)
     {
@@ -45,9 +40,9 @@ struct Hexagon
     public Hexagon Rotate(bool left)
     {
         if (left)
-            return new Hexagon(r, s);
-        else
             return new Hexagon(s, q);
+        else
+            return new Hexagon(r, s);
     }
 
     static public Hexagon Add(Hexagon a, Hexagon b)
@@ -105,9 +100,14 @@ struct Hexagon
         int hr = r.GetHashCode();
         return (int)(hq ^ (hr + 0x9e3779b9 + (hq << 6) + (hq >> 2)));
     }
+
+    bool System.IEquatable<Hexagon>.Equals(Hexagon other)
+    {
+        return q == other.q && r == other.r && s == other.s;
+    }
 }
 
-struct FractionalHexagon
+public class FractionalHexagon
 {
     public FractionalHexagon(float q, float r, float s)
     {
@@ -164,7 +164,7 @@ struct FractionalHexagon
 
 }
 
-struct OffsetCoord
+public class OffsetCoord
 {
     public OffsetCoord(int col, int row)
     {
@@ -211,7 +211,7 @@ struct OffsetCoord
 
 }
 
-struct Orientation
+public class Orientation
 {
     public Orientation(float f0, float f1, float f2, float f3, float b0, float b1, float b2, float b3, float start_angle)
     {
@@ -236,7 +236,7 @@ struct Orientation
     public readonly float start_angle;
 }
 
-struct Layout
+public class Layout
 {
     public Layout(Orientation orientation, Point size, Point origin)
     {

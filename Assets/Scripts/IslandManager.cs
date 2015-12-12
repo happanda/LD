@@ -6,49 +6,58 @@ using System.Collections.Generic;
 
 public class IslandManager : MonoBehaviour
 {
+    static public IslandManager Inst;
+
     public GameObject HexPrefab;
+    public Layout layout;
         // just a parent for all generated objects
     private Transform boardHolder;
-    private Layout layout;
-    private HashSet<Hexagon> map = new HashSet<Hexagon>();
+    private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
+    private IList<MovingHex> hexes = new List<MovingHex>();
+
+    public void AddMovingHex(MovingHex mh)
+    {
+        hexes.Add(mh);
+    }
 
     void InitIsland()
     {
         boardHolder = new GameObject("IslandStuff").transform;
-        layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size), new Point(0f, 0f));
+        layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * 0.8f), new Point(0f, 0f));
+        map.Clear();
+        hexes.Clear();
 
-        for (int q = -4; q <= 4; q++)
+        // romboid map
+        for (int q = -2; q <= 2; q++)
         {
-            for (int r = -4; r <= 4; r++)
+            for (int r = -2; r <= 2; r++)
             {
                 Hexagon hex = new Hexagon(q, r);
-                map.Add(hex);
                 Quaternion quat = HexPrefab.transform.rotation;
                 Point pnt = Layout.HexagonToPixel(layout, hex);
                 GameObject inst = Instantiate(HexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
                 inst.transform.SetParent(boardHolder);
+                map[hex] = inst.GetComponent<MovingHex>();
+                map[hex].SetCoordinates(q, r);
             }
         }
-        //const int mapRad = 3;
-        //for (int q = -mapRad; q <= mapRad; q++)
-        //{
-        //    int r1 = Math.Max(-mapRad, -q - mapRad);
-        //    int r2 = Math.Min(mapRad, -q + mapRad);
-        //    for (int r = r1; r <= r2; r++)
-        //    {
-        //        Hexagon hex = new Hexagon(q, r, -q - r);
-        //        map.Add(hex);
-        //        Quaternion quat = HexPrefab.transform.rotation;
-        //        Point pnt = Layout.HexagonToPixel(layout, hex);
-        //        GameObject inst = Instantiate(HexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-        //        inst.transform.SetParent(boardHolder);
-        //    }
-        //}
+    }
+
+    void Awake()
+    {
+        Debug.Log("IslandManager.Awake");
+        if (Inst == null)
+            Inst = this;
+        else if (Inst != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        InitIsland();
     }
 
     void Start()
     {
-        InitIsland();
     }
 
     void Update()
@@ -60,49 +69,23 @@ public class IslandManager : MonoBehaviour
 
         if (Input.GetKeyDown("left"))
         {
-            TurnLeft();
+            Turn(true);
         }
         else if (Input.GetKeyDown("right"))
         {
-            TurnRight();
+            Turn(false);
         }
     }
 
-    private void TurnLeft()
+    private void Turn(bool left)
     {
-        foreach (Transform child in boardHolder)
+        Debug.Log("Turn " + (left ? "Left" : "Right"));
+        map.Clear();
+        foreach (var hex in hexes)
         {
-            Destroy(child.gameObject);
+            Hexagon newHex = hex.hexagon.Rotate(left);
+            map[newHex] = hex;
+            map[newHex].hexagon = newHex;
         }
-        HashSet<Hexagon> newMap = new HashSet<Hexagon>();
-        foreach (var hex in map)
-        {
-            Hexagon newHex = hex.Rotate(true);
-            newMap.Add(newHex);
-            Quaternion quat = HexPrefab.transform.rotation;
-            Point pnt = Layout.HexagonToPixel(layout, hex);
-            GameObject inst = Instantiate(HexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-            inst.transform.SetParent(boardHolder);
-        }
-        map = newMap;
-    }
-
-    private void TurnRight()
-    {
-        foreach (Transform child in boardHolder)
-        {
-            Destroy(child.gameObject);
-        }
-        HashSet<Hexagon> newMap = new HashSet<Hexagon>();
-        foreach (var hex in map)
-        {
-            Hexagon newHex = hex.Rotate(false);
-            newMap.Add(newHex);
-            Quaternion quat = HexPrefab.transform.rotation;
-            Point pnt = Layout.HexagonToPixel(layout, hex);
-            GameObject inst = Instantiate(HexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-            inst.transform.SetParent(boardHolder);
-        }
-        map = newMap;
     }
 }
