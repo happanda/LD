@@ -40,10 +40,27 @@ public class Hexagon : System.IEquatable<Hexagon>
 
     public Hexagon Rotate(bool left)
     {
-        if (left)
-            return new Hexagon(s, q);
-        else
-            return new Hexagon(r, s);
+        Hexagon center = new Hexagon(0, 0);
+        int radius = Hexagon.Length(this);
+        Hexagon iter = Hexagon.Add(center, Hexagon.Scale(Hexagon.directions[0], radius));
+        bool notFound = true;
+        for (int i = 0; i < 6 && notFound; ++i)
+        {
+            for (int j = 0; j < radius && notFound; ++j)
+            {
+                if (iter == this)
+                {
+                    notFound = false;
+                    for (int k = j; k < j + radius; ++k)
+                    {
+                        iter = Hexagon.Neighbor(iter, (i + (k / radius) + 2) % 6);
+                    }
+                }
+                else
+                    iter = Hexagon.Neighbor(iter, (i + 2) % 6);
+            }
+        }
+        return iter;
     }
 
     static public Hexagon Add(Hexagon a, Hexagon b)
@@ -63,7 +80,15 @@ public class Hexagon : System.IEquatable<Hexagon>
         return new Hexagon(a.q * k, a.r * k, a.s * k);
     }
 
-    static public List<Hexagon> directions = new List<Hexagon>{new Hexagon(1, 0, -1), new Hexagon(1, -1, 0), new Hexagon(0, -1, 1), new Hexagon(-1, 0, 1), new Hexagon(-1, 1, 0), new Hexagon(0, 1, -1)};
+    static public List<Hexagon> directions = new List<Hexagon>
+        {
+            new Hexagon(1, 0, -1), // RU
+            new Hexagon(1, -1, 0), // RD
+            new Hexagon(0, -1, 1), // D
+            new Hexagon(-1, 0, 1), // LD
+            new Hexagon(-1, 1, 0), // LU
+            new Hexagon(0, 1, -1), // U
+        };
 
     static public Hexagon Direction(int direction)
     {
@@ -102,9 +127,24 @@ public class Hexagon : System.IEquatable<Hexagon>
         return (int)(hq ^ (hr + 0x9e3779b9 + (hq << 6) + (hq >> 2)));
     }
 
+    bool Equal(System.Object other)
+    {
+        return (other is Hexagon) && (this == (Hexagon)other);
+    }
+
     bool System.IEquatable<Hexagon>.Equals(Hexagon other)
     {
         return q == other.q && r == other.r && s == other.s;
+    }
+
+    public static bool operator ==(Hexagon a, Hexagon b)
+    {
+        return (a.q == b.q) && (a.r == b.r) && (a.s == b.s);
+    }
+    
+    public static bool operator !=(Hexagon a, Hexagon b)
+    {
+        return !(a == b);
     }
 }
 
