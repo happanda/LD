@@ -48,4 +48,9 @@ public class MovingHex : MonoBehaviour
             transform.position = newPos;
         }
     }
+
+    public bool InBarrier()
+    {
+        return IslandManager.Inst.InBarrier(hexagon_);
+    }
 }

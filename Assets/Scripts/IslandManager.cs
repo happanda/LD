@@ -21,11 +21,6 @@ public class IslandManager : MonoBehaviour
     private int barrierRadius = 0;
 
 
-    public void AddMovingHex(MovingHex mh)
-    {
-        hexes.Add(mh);
-    }
-
     void InitIsland()
     {
         boardHolder = new GameObject("IslandStuff").transform;
@@ -36,9 +31,9 @@ public class IslandManager : MonoBehaviour
         mainHex = null;
 
         // romboid map
-        for (int q = -2; q <= 2; q++)
+        for (int q = -3; q <= 3; q++)
         {
-            for (int r = -2; r <= 2; r++)
+            for (int r = -3; r <= 3; r++)
             {
                 Hexagon hex = new Hexagon(q, r);
                 Quaternion quat = HexPrefab.transform.rotation;
@@ -94,6 +89,16 @@ public class IslandManager : MonoBehaviour
         {
             ShrinkBarrier();
         }
+    }
+
+    public void AddMovingHex(MovingHex mh)
+    {
+        hexes.Add(mh);
+    }
+
+    public bool InBarrier(Hexagon hex)
+    {
+        return barrier.Contains(hex);
     }
 
     private void Turn(bool left)
