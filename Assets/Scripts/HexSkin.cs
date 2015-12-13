@@ -62,4 +62,10 @@ public class HexSkin : MonoBehaviour
     {
         HighlightKnobs(level);
     }
+
+    void OnDestroy()
+    {
+        IslandManager.Inst.barrierChanged -= OnBarrierChanged;
+        movingHex.levelChanged -= OnLevelChanged;
+    }
 }

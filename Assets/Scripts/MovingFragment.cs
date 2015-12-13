@@ -6,7 +6,7 @@ public class MovingFragment : MonoBehaviour
 {
     public float outerRadius = 12f; // radius of random start position
     public float speedMin = 2f;
-    public float speedMax = 6f;
+    public float speedMax = 4f;
 
     private Vector3 flightDir;
     private float speed;
