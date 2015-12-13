@@ -5,8 +5,6 @@ using System.Collections;
 public class MovingFragment : MonoBehaviour
 {
     public float outerRadius = 12f; // radius of random start position
-    public float speedMin = 2f;
-    public float speedMax = 4f;
 
     private Vector3 flightDir;
     private float speed;
@@ -16,7 +14,7 @@ public class MovingFragment : MonoBehaviour
     {
         transform.position = RandomStart();
         flightDir = new Vector3(0f, -1f, 0f);// (Vector3.zero - transform.position).normalized;
-        speed = Random.Range(speedMin, speedMax);
+        speed = Random.Range(IslandManager.Inst.minFragSpeed, IslandManager.Inst.maxFragSpeed);
         type = TileExt.Random();
     }
 

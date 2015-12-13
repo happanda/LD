@@ -29,11 +29,15 @@ public class IslandManager : MonoBehaviour
     static public IslandManager Inst;
 
     public GameObject[] TilePrefabs;
+    [HideInInspector]
     public Layout layout;
     public GameObject[] FragPrefabs;
 
     public float minSpawnTime = 1f;
     public float maxSpawnTime = 1.1f;
+    public float minFragSpeed = 2f;
+    public float maxFragSpeed = 3f;
+
     private float nextSpawnTime = 0f;
 
     public delegate void BarrierChanged();
@@ -42,6 +46,7 @@ public class IslandManager : MonoBehaviour
     private Transform boardHolder; // just a parent for all generated objects
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
+    [HideInInspector]
     public int maxRadius = 0; // maximum distance of tiles from main
 
     private MovingHex mainHex; // central Tower tile
