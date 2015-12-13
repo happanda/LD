@@ -1,16 +1,32 @@
 ﻿using UnityEngine;
+using Random = UnityEngine.Random;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 
+public enum Tile
+{
+    Main        = 0,
+    Desert      = 1,
+    Field       = 2,
+    Forest      = 3,
+    Hills       = 4,
+    Mountains   = 5,
+}
+
 public class IslandManager : MonoBehaviour
 {
     static public IslandManager Inst;
 
     public GameObject HexPrefab;
+    public GameObject[] TilePrefabs;
     public Layout layout;
+
+    public delegate void BarrierChanged();
+    public event BarrierChanged barrierChanged;
+
         // just a parent for all generated objects
     private Transform boardHolder;
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
@@ -38,7 +54,10 @@ public class IslandManager : MonoBehaviour
                 Hexagon hex = new Hexagon(q, r);
                 Quaternion quat = HexPrefab.transform.rotation;
                 Point pnt = Layout.HexagonToPixel(layout, hex);
-                GameObject inst = Instantiate(HexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
+                GameObject hexPrefab = TilePrefabs[Random.Range(0, TilePrefabs.Length)];
+                if (q == 0 && r == 0)
+                    hexPrefab = TilePrefabs[(int)Tile.Main];
+                GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
                 inst.transform.SetParent(boardHolder);
                 map[hex] = inst.GetComponent<MovingHex>();
                 map[hex].SetCoordinates(q, r);
@@ -47,6 +66,7 @@ public class IslandManager : MonoBehaviour
         mainHex = map[new Hexagon(0, 0)];
         barrier.Add(new Hexagon(0, 0));
         barrierRadius = 0;
+        barrierChanged();
     }
 
     void Awake()
@@ -122,6 +142,7 @@ public class IslandManager : MonoBehaviour
             barrier = new HashSet<Hexagon>(ring);
             barrierRadius = newRad;
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
+            barrierChanged();
             return true;
         }
         Debug.Log("ExpandBarrier FALSE: " + barrierRadius);
@@ -145,6 +166,7 @@ public class IslandManager : MonoBehaviour
         //Debug.Assert(barrierRadius >= 0, "Barrier radius is less than zero?!");
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
+        barrierChanged();
         return true;
     }
 }

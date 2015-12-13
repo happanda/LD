@@ -4,16 +4,20 @@ using System.Collections;
 
 public class HexSkin : MonoBehaviour
 {
+    
     public Sprite[] spritePrefabs;
     private SpriteRenderer renderer;
     private MovingHex movingHex;
+    private Color defaultColor;
 
     void Awake()
     {
         renderer = GetComponent<SpriteRenderer>();
-        var spritePrefab = spritePrefabs[Random.Range(0, spritePrefabs.Length)];
-        renderer.sprite = spritePrefab;
+        //var spritePrefab = spritePrefabs[Random.Range(0, spritePrefabs.Length)];
+        //renderer.sprite = spritePrefab;
+        defaultColor = renderer.color;
         movingHex = GetComponent<MovingHex>();
+        IslandManager.Inst.barrierChanged += OnBarrierChanged;
     }
 
     // Use this for initialization
@@ -25,10 +29,13 @@ public class HexSkin : MonoBehaviour
     void Update()
     {
         renderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
+    }
+
+    void OnBarrierChanged()
+    {
         if (movingHex.InBarrier())
             renderer.color = Color.red;
         else
-            renderer.color = Color.white;
+            renderer.color = defaultColor;
     }
-
 }
