@@ -41,12 +41,10 @@ public class HexSkin : MonoBehaviour
         if (movingHex.InBarrier())
         {
             spriteRenderer.color = Color.red;
-            movingHex.Upgrade();
         }
         else
         {
             spriteRenderer.color = defaultColor;
-            movingHex.Downgrade();
         }
     }
 

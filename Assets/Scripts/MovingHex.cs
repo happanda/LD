@@ -106,8 +106,8 @@ public class MovingHex : MonoBehaviour
         {
             if (frag.type == type)
                 Upgrade();
-            else
-                Downgrade();
+            //else
+            //    Downgrade();
         }
     }
 }
