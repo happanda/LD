@@ -15,6 +15,14 @@ public enum Tile
     Hills       = 4,
     Mountains   = 5,
 }
+public class TileExt
+{
+    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length;
+    public static Tile Random()
+    {
+        return (Tile)UnityEngine.Random.Range(1, TilesCount);
+    }
+}
 
 public class IslandManager : MonoBehaviour
 {
@@ -22,16 +30,17 @@ public class IslandManager : MonoBehaviour
 
     public GameObject[] TilePrefabs;
     public Layout layout;
+    public GameObject[] FragPrefabs;
 
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
 
     private Transform boardHolder; // just a parent for all generated objects
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
-    private IList<MovingHex> hexes = new List<MovingHex>();
+    private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
 
     private MovingHex mainHex; // central Tower tile
-    private HashSet<Hexagon> barrier = new HashSet<Hexagon>();
+    private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
     private int barrierRadius = 0;
 
 
@@ -43,29 +52,25 @@ public class IslandManager : MonoBehaviour
         hexes.Clear();
         barrier.Clear();
         mainHex = null;
+        barrierRadius = 0;
 
+        Attach(new Hexagon(0, 0), Tile.Main);
+        mainHex = map[new Hexagon(0, 0)];
+        
         // romboid map
         for (int q = -3; q <= 3; q++)
         {
-            for (int r = -3; r <= 3; r++)
+            for (int r = -2; r <= 2; r++)
             {
                 Hexagon hex = new Hexagon(q, r);
-                Point pnt = Layout.HexagonToPixel(layout, hex);
-                GameObject hexPrefab = TilePrefabs[Random.Range(0, TilePrefabs.Length)];
-                if (q == 0 && r == 0)
-                    hexPrefab = TilePrefabs[(int)Tile.Main];
-                Quaternion quat = hexPrefab.transform.rotation;
-                GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-                inst.transform.SetParent(boardHolder);
-                map[hex] = inst.GetComponent<MovingHex>();
-                map[hex].SetCoordinates(q, r);
+                Attach(hex, (Tile)Random.Range(1, (int)TileExt.Random()));
             }
         }
-        mainHex = map[new Hexagon(0, 0)];
-        barrier.Add(new Hexagon(0, 0));
-        barrierRadius = 0;
-        if (barrierChanged != null)
-            barrierChanged();
+    }
+
+    void InitMain()
+    {
+        Attach(new Hexagon(0, 0), Tile.Main);
     }
 
     void Awake()
@@ -106,6 +111,28 @@ public class IslandManager : MonoBehaviour
         {
             ShrinkBarrier();
         }
+        else if (Input.GetKeyDown("space"))
+        {
+            GenFragment();
+        }
+    }
+
+    private void Attach(Hexagon hex, Tile type)
+    {
+        if (map.ContainsKey(hex))
+        {
+            Debug.LogError("Attach in place of existing tile: " + hex.ToString());
+            return;
+        }
+        Point pnt = Layout.HexagonToPixel(layout, hex);
+        GameObject hexPrefab = TilePrefabs[(int)type];
+        Quaternion quat = hexPrefab.transform.rotation;
+        GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
+        inst.transform.SetParent(boardHolder);
+        map[hex] = inst.GetComponent<MovingHex>();
+        map[hex].SetCoordinates(hex.q, hex.r);
+
+        ExpandBarrier();
     }
 
     public void AddMovingHex(MovingHex mh)
@@ -167,5 +194,12 @@ public class IslandManager : MonoBehaviour
         if (barrierChanged != null)
             barrierChanged();
         return true;
+    }
+
+
+    private void GenFragment()
+    {
+        GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
+        Instantiate(fragPrefab);
     }
 }
