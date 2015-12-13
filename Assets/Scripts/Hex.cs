@@ -42,22 +42,26 @@ public class Hexagon : System.IEquatable<Hexagon>
     {
         Hexagon center = new Hexagon(0, 0);
         int radius = Hexagon.Length(this);
-        Hexagon iter = Hexagon.Add(center, Hexagon.Scale(Hexagon.directions[0], radius));
+        Hexagon iter = Hexagon.Add(center, Hexagon.Scale(Hexagon.directions[2], radius));
         bool notFound = true;
-        for (int i = 0; i < 6 && notFound; ++i)
+        int shift = left ? 5 : 1;
+        int shiftI = left ? 0 : 4;
+        int shiftRad = radius * shift;
+
+        for (int i = 0; i < 6 * shift && notFound; i += shift)
         {
-            for (int j = 0; j < radius && notFound; ++j)
+            for (int j = 0; j < shiftRad && notFound; j += shift)
             {
                 if (iter == this)
                 {
                     notFound = false;
-                    for (int k = j; k < j + radius; ++k)
+                    for (int k = j; k < j + shiftRad; k += shift)
                     {
-                        iter = Hexagon.Neighbor(iter, (i + (k / radius) + 2) % 6);
+                        iter = Hexagon.Neighbor(iter, (i + shiftI + (k / shiftRad) * shift) % 6);
                     }
                 }
                 else
-                    iter = Hexagon.Neighbor(iter, (i + 2) % 6);
+                    iter = Hexagon.Neighbor(iter, (i + shiftI) % 6);
             }
         }
         return iter;
