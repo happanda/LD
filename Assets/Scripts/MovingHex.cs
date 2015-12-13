@@ -7,6 +7,8 @@ public class MovingHex : MonoBehaviour
     private PolygonCollider2D collider;
     private Rigidbody2D rb2D;
 
+    public Tile tile;
+
     public Hexagon hexagon
     {
         get { return this.hexagon_; }

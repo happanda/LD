@@ -20,7 +20,6 @@ public class IslandManager : MonoBehaviour
 {
     static public IslandManager Inst;
 
-    public GameObject HexPrefab;
     public GameObject[] TilePrefabs;
     public Layout layout;
 
@@ -52,11 +51,11 @@ public class IslandManager : MonoBehaviour
             for (int r = -3; r <= 3; r++)
             {
                 Hexagon hex = new Hexagon(q, r);
-                Quaternion quat = HexPrefab.transform.rotation;
                 Point pnt = Layout.HexagonToPixel(layout, hex);
                 GameObject hexPrefab = TilePrefabs[Random.Range(0, TilePrefabs.Length)];
                 if (q == 0 && r == 0)
                     hexPrefab = TilePrefabs[(int)Tile.Main];
+                Quaternion quat = hexPrefab.transform.rotation;
                 GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
                 inst.transform.SetParent(boardHolder);
                 map[hex] = inst.GetComponent<MovingHex>();
