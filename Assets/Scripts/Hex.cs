@@ -134,7 +134,7 @@ public class Hexagon : System.IEquatable<Hexagon>
         return (int)(hq ^ (hr + 0x9e3779b9 + (hq << 6) + (hq >> 2)));
     }
 
-    bool Equal(System.Object other)
+    public override bool Equals(System.Object other)
     {
         return (other is Hexagon) && (this == (Hexagon)other);
     }
@@ -152,6 +152,11 @@ public class Hexagon : System.IEquatable<Hexagon>
     public static bool operator !=(Hexagon a, Hexagon b)
     {
         return !(a == b);
+    }
+
+    public override string ToString()
+    {
+        return "(" + q + ", " + r + ", " + s + ")";
     }
 }
 

@@ -26,12 +26,11 @@ public class IslandManager : MonoBehaviour
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
 
-        // just a parent for all generated objects
-    private Transform boardHolder;
+    private Transform boardHolder; // just a parent for all generated objects
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>();
 
-    private MovingHex mainHex;
+    private MovingHex mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>();
     private int barrierRadius = 0;
 
@@ -65,7 +64,8 @@ public class IslandManager : MonoBehaviour
         mainHex = map[new Hexagon(0, 0)];
         barrier.Add(new Hexagon(0, 0));
         barrierRadius = 0;
-        barrierChanged();
+        if (barrierChanged != null)
+            barrierChanged();
     }
 
     void Awake()
@@ -87,10 +87,8 @@ public class IslandManager : MonoBehaviour
 
     void Update()
     {
-        int horiz = 0;
-        int verti = 0;
-        horiz = (int)Input.GetAxisRaw("Horizontal");
-        verti = (int)Input.GetAxisRaw("Vertical");
+        //int horiz = (int)Input.GetAxisRaw("Horizontal");
+        //int verti = (int)Input.GetAxisRaw("Vertical");
 
         if (Input.GetKeyDown("left"))
         {
@@ -141,7 +139,8 @@ public class IslandManager : MonoBehaviour
             barrier = new HashSet<Hexagon>(ring);
             barrierRadius = newRad;
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
-            barrierChanged();
+            if (barrierChanged != null)
+                barrierChanged();
             return true;
         }
         Debug.Log("ExpandBarrier FALSE: " + barrierRadius);
@@ -165,7 +164,8 @@ public class IslandManager : MonoBehaviour
         //Debug.Assert(barrierRadius >= 0, "Barrier radius is less than zero?!");
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
-        barrierChanged();
+        if (barrierChanged != null)
+            barrierChanged();
         return true;
     }
 }

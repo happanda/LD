@@ -3,11 +3,16 @@ using System.Collections;
 
 public class MovingHex : MonoBehaviour
 {
-    private Hexagon hexagon_; // actual position
+    private Hexagon hexagon_; // actual coordinates
     private PolygonCollider2D polyCollider;
     private Rigidbody2D rb2D;
 
-    public Tile tile;
+    public Tile tile; // type of the tile
+    private int level; // level if upgrade
+
+    public delegate void LevelChanged(int level);
+    public event LevelChanged levelChanged;
+
 
     public Hexagon hexagon
     {
@@ -28,6 +33,7 @@ public class MovingHex : MonoBehaviour
         Debug.Log("MovingHex.Awake");
         polyCollider = GetComponent<PolygonCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
+        level = 0;
         IslandManager.Inst.AddMovingHex(this);
     }
 
@@ -54,5 +60,27 @@ public class MovingHex : MonoBehaviour
     public bool InBarrier()
     {
         return IslandManager.Inst.InBarrier(hexagon_);
+    }
+
+    public void Upgrade()
+    {
+        if (level < 3)
+        {
+            ++level;
+            Debug.Log("Level " + hexagon_.ToString() + ": " + level);
+            if (levelChanged != null)
+                levelChanged(level);
+        }
+    }
+
+    public void Downgrade()
+    {
+        if (level > 0)
+        {
+            --level;
+            Debug.Log("Level " + hexagon_.ToString() + ": " + level);
+            if (levelChanged != null)
+                levelChanged(level);
+        }
     }
 }

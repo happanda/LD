@@ -4,20 +4,20 @@ using System.Collections;
 
 public class HexSkin : MonoBehaviour
 {
-    
     public Sprite[] spritePrefabs;
-    private SpriteRenderer renderer;
+    private SpriteRenderer spriteRenderer;
     private MovingHex movingHex;
     private Color defaultColor;
     private KnobColor[] knobs;
 
     void Awake()
     {
-        renderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         //var spritePrefab = spritePrefabs[Random.Range(0, spritePrefabs.Length)];
         //renderer.sprite = spritePrefab;
-        defaultColor = renderer.color;
+        defaultColor = spriteRenderer.color;
         movingHex = GetComponent<MovingHex>();
+        movingHex.levelChanged += OnLevelChanged;
 
         knobs = new KnobColor[3];
         for (int i = 0; i < 3; ++i)
@@ -33,32 +33,33 @@ public class HexSkin : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        renderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
+        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
     }
 
     void OnBarrierChanged()
     {
         if (movingHex.InBarrier())
         {
-            renderer.color = Color.red;
-            HighlightKnob(0);
-            HighlightKnob(2);
+            spriteRenderer.color = Color.red;
+            movingHex.Upgrade();
         }
         else
         {
-            renderer.color = defaultColor;
-            HideKnob(0);
-            HideKnob(2);
+            spriteRenderer.color = defaultColor;
+            movingHex.Downgrade();
         }
     }
 
-    public void HighlightKnob(int idx)
+    public void HighlightKnobs(int count)
     {
-        knobs[idx].Highlight();
+        for (int i = 0; i < count; ++i)
+            knobs[i].Highlight();
+        for (int i = count; i < knobs.Length; ++i)
+            knobs[i].Hide();
     }
 
-    public void HideKnob(int idx)
+    private void OnLevelChanged(int level)
     {
-        knobs[idx].Hide();
+        HighlightKnobs(level);
     }
 }
