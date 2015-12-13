@@ -40,31 +40,12 @@ public class Hexagon : System.IEquatable<Hexagon>
 
     public Hexagon Rotate(bool left)
     {
-        Hexagon center = new Hexagon(0, 0);
         int radius = Hexagon.Length(this);
-        Hexagon iter = Hexagon.Add(center, Hexagon.Scale(Hexagon.directions[2], radius));
-        bool notFound = true;
-        int shift = left ? 5 : 1;
-        int shiftI = left ? 0 : 4;
-        int shiftRad = radius * shift;
+        IList<Hexagon> ring = Ring(new Hexagon(0, 0), radius);
 
-        for (int i = 0; i < 6 * shift && notFound; i += shift)
-        {
-            for (int j = 0; j < shiftRad && notFound; j += shift)
-            {
-                if (iter == this)
-                {
-                    notFound = false;
-                    for (int k = j; k < j + shiftRad; k += shift)
-                    {
-                        iter = Hexagon.Neighbor(iter, (i + shiftI + (k / shiftRad) * shift) % 6);
-                    }
-                }
-                else
-                    iter = Hexagon.Neighbor(iter, (i + shiftI) % 6);
-            }
-        }
-        return iter;
+        int idx = ring.IndexOf(this);
+        Debug.Assert(idx >= 0, "Tile is not present in it's own ring");
+        return ring[(idx + (left ? radius : ring.Count - radius)) % ring.Count];
     }
 
     static public Hexagon Add(Hexagon a, Hexagon b)
@@ -87,11 +68,11 @@ public class Hexagon : System.IEquatable<Hexagon>
     static public List<Hexagon> directions = new List<Hexagon>
         {
             new Hexagon(1, 0, -1), // RU
-            new Hexagon(1, -1, 0), // RD
-            new Hexagon(0, -1, 1), // D
-            new Hexagon(-1, 0, 1), // LD
-            new Hexagon(-1, 1, 0), // LU
             new Hexagon(0, 1, -1), // U
+            new Hexagon(-1, 1, 0), // LU
+            new Hexagon(-1, 0, 1), // LD
+            new Hexagon(0, -1, 1), // D
+            new Hexagon(1, -1, 0), // RD
         };
 
     static public Hexagon Direction(int direction)
@@ -99,6 +80,28 @@ public class Hexagon : System.IEquatable<Hexagon>
         return Hexagon.directions[direction];
     }
 
+    static public IList<Hexagon> Ring(Hexagon center, int radius)
+    {
+        IList<Hexagon> ring = new List<Hexagon>();
+        if (radius == 0)
+            ring.Add(center);
+        else
+        {
+            Hexagon iter = Hexagon.Add(center, Hexagon.Scale(Hexagon.directions[0], radius));
+            bool notFound = true;
+            int shiftI = 2;
+
+            for (int i = 0; i < 6 && notFound; ++i)
+            {
+                for (int j = 0; j < radius && notFound; ++j)
+                {
+                    iter = Hexagon.Neighbor(iter, (i + shiftI) % 6);
+                    ring.Add(iter);
+                }
+            }
+        }
+        return ring;
+    }
 
     static public Hexagon Neighbor(Hexagon Hexagon, int direction)
     {
