@@ -36,4 +36,9 @@ public class MovingFragment : MonoBehaviour
         float angle = Random.value * Mathf.PI * 2f;
         return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * outerRadius;
     }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        Destroy(gameObject);
+    }
 }

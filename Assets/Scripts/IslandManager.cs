@@ -58,7 +58,7 @@ public class IslandManager : MonoBehaviour
         mainHex = map[new Hexagon(0, 0)];
         
         // romboid map
-        for (int q = -3; q <= 3; q++)
+        for (int q = -2; q <= 2; q++)
         {
             for (int r = -2; r <= 2; r++)
             {
@@ -131,7 +131,7 @@ public class IslandManager : MonoBehaviour
         inst.transform.SetParent(boardHolder);
         map[hex] = inst.GetComponent<MovingHex>();
         map[hex].SetCoordinates(hex.q, hex.r);
-
+        map[hex].type = type;
         ExpandBarrier();
     }
 

@@ -7,7 +7,7 @@ public class MovingHex : MonoBehaviour
     private PolygonCollider2D polyCollider;
     private Rigidbody2D rb2D;
 
-    public Tile tile; // type of the tile
+    public Tile type; // type of the tile
     private int level; // level if upgrade
 
     public delegate void LevelChanged(int level);
@@ -82,5 +82,17 @@ public class MovingHex : MonoBehaviour
             if (levelChanged != null)
                 levelChanged(level);
         }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.tag != "Fragment")
+            return;
+
+        MovingFragment frag = other.GetComponent<MovingFragment>();
+        if (frag.type == type)
+            Upgrade();
+        else
+            Downgrade();
     }
 }
