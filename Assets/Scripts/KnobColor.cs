@@ -3,18 +3,51 @@ using System.Collections;
 
 public class KnobColor : MonoBehaviour
 {
-    private SpriteRenderer renderer;
+    public Color highlight = Color.green;
+    public Color ordinary = Color.clear;
+    public float colorTransitTime = 1.0f;
+
+    private SpriteRenderer spriteRenderer;
+    private Color desiredColor;
 
     void Awake()
     {
-        renderer = GetComponent<SpriteRenderer>();
-        renderer.color = new Color(1f, 1f, 1f, 0f);
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.color = ordinary;
+    }
+
+    public void Highlight()
+    {
+        color = highlight;
+    }
+
+    public void Hide()
+    {
+        color = ordinary;
     }
 
     public Color color
     {
-        get { return renderer.color; }
-        set { renderer.color = value; }
+        get { return spriteRenderer.color; }
+        set
+        {
+            desiredColor = value;
+            if (desiredColor != ordinary)
+                StartCoroutine(TransitColor());
+            else
+                spriteRenderer.color = desiredColor;
+        }
+    }
+
+    private IEnumerator TransitColor()
+    {
+        float elapsed = 0f;
+        while (spriteRenderer.color != desiredColor)
+        {
+            elapsed += Time.deltaTime;
+            spriteRenderer.color = Color.Lerp(spriteRenderer.color, desiredColor, elapsed / colorTransitTime);
+            yield return null;
+        }
     }
 
     // Use this for initialization

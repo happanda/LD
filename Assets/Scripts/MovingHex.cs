@@ -4,7 +4,7 @@ using System.Collections;
 public class MovingHex : MonoBehaviour
 {
     private Hexagon hexagon_; // actual position
-    private PolygonCollider2D collider;
+    private PolygonCollider2D polyCollider;
     private Rigidbody2D rb2D;
 
     public Tile tile;
@@ -26,7 +26,7 @@ public class MovingHex : MonoBehaviour
     void Awake()
     {
         Debug.Log("MovingHex.Awake");
-        collider = GetComponent<PolygonCollider2D>();
+        polyCollider = GetComponent<PolygonCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
         IslandManager.Inst.AddMovingHex(this);
     }
