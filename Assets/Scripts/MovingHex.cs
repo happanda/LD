@@ -34,7 +34,6 @@ public class MovingHex : MonoBehaviour
         polyCollider = GetComponent<PolygonCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
         level = 0;
-        IslandManager.Inst.AddMovingHex(this);
     }
 
     // Use this for initialization
@@ -82,6 +81,8 @@ public class MovingHex : MonoBehaviour
             if (levelChanged != null)
                 levelChanged(level);
         }
+        else
+            IslandManager.Inst.Remove(hexagon_);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -90,9 +91,22 @@ public class MovingHex : MonoBehaviour
             return;
 
         MovingFragment frag = other.GetComponent<MovingFragment>();
-        if (frag.type == type)
-            Upgrade();
+        if (InBarrier())
+        {
+                // decide which side was hit
+            Vector3 dir = other.transform.position - transform.position;
+            float angle = Mathf.Rad2Deg * Mathf.Atan2(dir.y, dir.x);
+            if (angle < 0)
+                angle += 360f;
+            Hexagon newHex = Hexagon.Neighbor(hexagon_, Mathf.RoundToInt(angle) / 60);
+            IslandManager.Inst.Attach(newHex, frag.type);
+        }
         else
-            Downgrade();
+        {
+            if (frag.type == type)
+                Upgrade();
+            else
+                Downgrade();
+        }
     }
 }

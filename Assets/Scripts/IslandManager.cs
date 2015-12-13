@@ -32,6 +32,10 @@ public class IslandManager : MonoBehaviour
     public Layout layout;
     public GameObject[] FragPrefabs;
 
+    public float minSpawnTime = 1f;
+    public float maxSpawnTime = 5f;
+    private float nextSpawnTime = 0f;
+
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
 
@@ -41,7 +45,7 @@ public class IslandManager : MonoBehaviour
 
     private MovingHex mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
-    private int barrierRadius = 0;
+    private int barrierRadius = -1;
 
 
     void InitIsland()
@@ -52,20 +56,20 @@ public class IslandManager : MonoBehaviour
         hexes.Clear();
         barrier.Clear();
         mainHex = null;
-        barrierRadius = 0;
+        barrierRadius = -1;
 
         Attach(new Hexagon(0, 0), Tile.Main);
         mainHex = map[new Hexagon(0, 0)];
         
         // romboid map
-        for (int q = -2; q <= 2; q++)
-        {
-            for (int r = -2; r <= 2; r++)
-            {
-                Hexagon hex = new Hexagon(q, r);
-                Attach(hex, (Tile)Random.Range(1, (int)TileExt.Random()));
-            }
-        }
+        //for (int q = -2; q <= 2; q++)
+        //{
+        //    for (int r = -2; r <= 2; r++)
+        //    {
+        //        Hexagon hex = new Hexagon(q, r);
+        //        Attach(hex, (Tile)Random.Range(1, (int)TileExt.Random()));
+        //    }
+        //}
     }
 
     void InitMain()
@@ -84,6 +88,7 @@ public class IslandManager : MonoBehaviour
             return;
         }
         InitIsland();
+        nextSpawnTime = 2f;
     }
 
     void Start()
@@ -113,11 +118,17 @@ public class IslandManager : MonoBehaviour
         }
         else if (Input.GetKeyDown("space"))
         {
-            GenFragment();
+            SpawnFragment();
+        }
+
+        if (nextSpawnTime < Time.time)
+        {
+            SpawnFragment();
+            nextSpawnTime = Time.time + Random.Range(minSpawnTime, maxSpawnTime);
         }
     }
 
-    private void Attach(Hexagon hex, Tile type)
+    public void Attach(Hexagon hex, Tile type)
     {
         if (map.ContainsKey(hex))
         {
@@ -129,15 +140,21 @@ public class IslandManager : MonoBehaviour
         Quaternion quat = hexPrefab.transform.rotation;
         GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
         inst.transform.SetParent(boardHolder);
-        map[hex] = inst.GetComponent<MovingHex>();
-        map[hex].SetCoordinates(hex.q, hex.r);
-        map[hex].type = type;
+        MovingHex mh = inst.GetComponent<MovingHex>();
+        map[hex] = mh;
+        mh.SetCoordinates(hex.q, hex.r);
+        mh.type = type;
+        hexes.Add(mh);
+
         ExpandBarrier();
     }
 
-    public void AddMovingHex(MovingHex mh)
+    public void Remove(Hexagon hex)
     {
-        hexes.Add(mh);
+        MovingHex mh = map[hex];
+        map.Remove(hex);
+        hexes.Remove(mh);
+        Destroy(mh.gameObject);
     }
 
     public bool InBarrier(Hexagon hex)
@@ -176,19 +193,12 @@ public class IslandManager : MonoBehaviour
 
     private bool ShrinkBarrier()
     {
-        //IList<Hexagon> ring = Hexagon.Ring(new Hexagon(0, 0), barrierRadius);
-        //if (ring.All(item => map.ContainsKey(item)))
-        //{
-        //    Debug.Log("ShrinkBarrier FALSE: " + barrierRadius);
-        //    return false;
-        //}
         if (barrierRadius == 0)
         {
             Debug.Log("ShrinkBarrier FALSE: " + barrierRadius);
             return false;
         }
         --barrierRadius;
-        //Debug.Assert(barrierRadius >= 0, "Barrier radius is less than zero?!");
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
         if (barrierChanged != null)
@@ -196,8 +206,7 @@ public class IslandManager : MonoBehaviour
         return true;
     }
 
-
-    private void GenFragment()
+    private void SpawnFragment()
     {
         GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
         Instantiate(fragPrefab);

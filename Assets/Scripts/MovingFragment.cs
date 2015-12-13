@@ -4,9 +4,9 @@ using System.Collections;
 
 public class MovingFragment : MonoBehaviour
 {
-    public float outerRadius = 10f; // radius of random start position
+    public float outerRadius = 12f; // radius of random start position
     public float speedMin = 2f;
-    public float speedMax = 8f;
+    public float speedMax = 6f;
 
     private Vector3 flightDir;
     private float speed;
@@ -29,6 +29,9 @@ public class MovingFragment : MonoBehaviour
     void Update()
     {
         transform.position = transform.position + flightDir * speed * Time.deltaTime;
+            // if the fragment flies to far from center, destroy it
+        if (transform.position.sqrMagnitude > outerRadius * outerRadius * 2)
+            Destroy(gameObject);
     }
 
     public Vector3 RandomStart()
