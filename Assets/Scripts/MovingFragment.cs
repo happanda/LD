@@ -5,13 +5,19 @@ using System.Collections;
 public class MovingFragment : MonoBehaviour
 {
     public float outerRadius = 10f; // radius of random start position
-    public float speed = 4f;
+    public float speedMin = 2f;
+    public float speedMax = 8f;
+
     private Vector3 flightDir;
+    private float speed;
+    public Tile type;
 
     void Awake()
     {
         transform.position = RandomStart();
         flightDir = (Vector3.zero - transform.position).normalized;
+        speed = Random.Range(speedMin, speedMax);
+        type = TileExt.Random();
     }
 
     // Use this for initialization

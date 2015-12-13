@@ -15,6 +15,14 @@ public enum Tile
     Hills       = 4,
     Mountains   = 5,
 }
+public class TileExt
+{
+    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length;
+    public static Tile Random()
+    {
+        return (Tile)UnityEngine.Random.Range(1, TilesCount);
+    }
+}
 
 public class IslandManager : MonoBehaviour
 {
@@ -55,7 +63,7 @@ public class IslandManager : MonoBehaviour
             for (int r = -2; r <= 2; r++)
             {
                 Hexagon hex = new Hexagon(q, r);
-                Attach(hex, (Tile)Random.Range(1, Enum.GetValues(typeof(Tile)).Length));
+                Attach(hex, (Tile)Random.Range(1, (int)TileExt.Random()));
             }
         }
     }
