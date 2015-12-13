@@ -7,6 +7,7 @@ public class MovingHex : MonoBehaviour
     private PolygonCollider2D polyCollider;
     private Rigidbody2D rb2D;
 
+    public float animationSpeed = 7f;
     public Tile type; // type of the tile
     private int level; // level if upgrade
 
@@ -51,7 +52,7 @@ public class MovingHex : MonoBehaviour
         {
             //Vector3 newPos = Vector3.RotateTowards(transform.position, dest, 10f * Time.deltaTime, 0f);
             //Vector3 newPos = Vector3.MoveTowards(transform.position, dest, 3f * Time.deltaTime);
-            Vector3 newPos = Vector3.Slerp(transform.position, dest, 3f * Time.deltaTime);
+            Vector3 newPos = Vector3.Slerp(transform.position, dest, animationSpeed * Time.deltaTime);
             transform.position = newPos;
         }
     }

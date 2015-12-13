@@ -15,7 +15,7 @@ public class MovingFragment : MonoBehaviour
     void Awake()
     {
         transform.position = RandomStart();
-        flightDir = (Vector3.zero - transform.position).normalized;
+        flightDir = new Vector3(0f, -1f, 0f);// (Vector3.zero - transform.position).normalized;
         speed = Random.Range(speedMin, speedMax);
         type = TileExt.Random();
     }
@@ -36,8 +36,9 @@ public class MovingFragment : MonoBehaviour
 
     public Vector3 RandomStart()
     {
-        float angle = Random.value * Mathf.PI * 2f;
-        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * outerRadius;
+        int q = Random.Range(-IslandManager.Inst.maxRadius - 1, IslandManager.Inst.maxRadius + 2);
+        Point pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, new Hexagon(q, 0));
+        return new Vector3(pnt.x, outerRadius);
     }
 
     void OnTriggerEnter2D(Collider2D other)

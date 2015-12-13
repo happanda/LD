@@ -33,7 +33,7 @@ public class IslandManager : MonoBehaviour
     public GameObject[] FragPrefabs;
 
     public float minSpawnTime = 1f;
-    public float maxSpawnTime = 5f;
+    public float maxSpawnTime = 1.1f;
     private float nextSpawnTime = 0f;
 
     public delegate void BarrierChanged();
@@ -42,6 +42,7 @@ public class IslandManager : MonoBehaviour
     private Transform boardHolder; // just a parent for all generated objects
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
+    public int maxRadius = 0; // maximum distance of tiles from main
 
     private MovingHex mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
@@ -145,6 +146,7 @@ public class IslandManager : MonoBehaviour
         mh.SetCoordinates(hex.q, hex.r);
         mh.type = type;
         hexes.Add(mh);
+        maxRadius = Math.Max(maxRadius, Hexagon.Length(hex));
 
         ExpandBarrier();
     }
