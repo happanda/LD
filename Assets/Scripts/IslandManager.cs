@@ -117,10 +117,10 @@ public class IslandManager : MonoBehaviour
         Attach(new Hexagon(1, -1), TileExt.Random());
         Attach(new Hexagon(-1, 1), TileExt.Random());
         // DEBUG
-        Attach(new Hexagon(0, 1), TileExt.Random());
-        Attach(new Hexagon(0, -1), TileExt.Random());
-        Attach(new Hexagon(1, 0), TileExt.Random());
-        Attach(new Hexagon(-1, 0), TileExt.Random());
+        //Attach(new Hexagon(0, 1), TileExt.Random());
+        //Attach(new Hexagon(0, -1), TileExt.Random());
+        //Attach(new Hexagon(1, 0), TileExt.Random());
+        //Attach(new Hexagon(-1, 0), TileExt.Random());
     }
 
     void InitMain()

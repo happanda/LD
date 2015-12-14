@@ -18,6 +18,7 @@ public class HexSkin : MonoBehaviour
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
         defaultColor = spriteRenderer.color;
         movingHex = GetComponent<MovingHex>();
         movingHex.levelChanged += OnLevelChanged;
@@ -71,6 +72,10 @@ public class HexSkin : MonoBehaviour
             bar.transform.SetParent(IslandManager.Inst.barrierHolder);
             bar.transform.localScale = Vector3.one;
             bar.transform.position = pos;
+            if (d == Dir.D || d == Dir.LD || d == Dir.RD)
+                bar.GetComponent<SpriteRenderer>().sortingOrder = spriteRenderer.sortingOrder + 50;
+            else
+                bar.GetComponent<SpriteRenderer>().sortingOrder = spriteRenderer.sortingOrder - 50;
         }
     }
 

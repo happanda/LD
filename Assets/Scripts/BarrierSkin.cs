@@ -4,6 +4,7 @@ using System.Collections;
 public class BarrierSkin : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
+    public int sortOrder;
 
     void Awake()
     {
@@ -12,6 +13,6 @@ public class BarrierSkin : MonoBehaviour
 
     void Update()
     {
-        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
+        //spriteRenderer.sortingOrder = sortOrder;
     }
 }
