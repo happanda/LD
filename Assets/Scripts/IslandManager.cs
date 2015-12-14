@@ -4,25 +4,46 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
+using System.Reflection;
 
 
 public enum Tile
 {
+    [Description("Tower")]
     Main        = 0,
+    [Description("Desert")]
     Desert      = 1,
+    [Description("Field")]
     Field       = 2,
+    [Description("Forest")]
     Forest      = 3,
+    [Description("Hills")]
     Hills       = 4,
+    [Description("Mountains")]
     Mountains   = 5,
+    [Description("Meteor")]
     Meteor      = 6,
 }
 
-public class TileExt
+public static class TileExt
 {
     public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length - 1; // don't count meteor
     public static Tile Random()
     {
         return (Tile)UnityEngine.Random.Range(1, TilesCount);
+    }
+    public static String Str(this Tile type)
+    {
+        FieldInfo fi = type.GetType().GetField(type.ToString());
+
+        if (null != fi)
+        {
+            object[] attrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), true);
+            if (attrs != null && attrs.Length > 0)
+                return ((DescriptionAttribute)attrs[0]).Description;
+        }
+        return "UNKNOWN";
     }
 }
 
@@ -56,7 +77,7 @@ public class IslandManager : MonoBehaviour
 
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
-
+    
     private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
     private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
@@ -291,5 +312,6 @@ public class IslandManager : MonoBehaviour
     {
         barrierRadius = -1;
         EraseOverTheBarrier();
+        Debug.Log("GAME OVER");
     }
 }

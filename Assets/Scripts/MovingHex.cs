@@ -11,9 +11,14 @@ public class MovingHex : MonoBehaviour
     public Tile type; // type of the tile
     private int level; // level if upgrade
 
+    // event for HexSkin of this same hex
     public delegate void LevelChanged(int level);
     public event LevelChanged levelChanged;
 
+    // event for Objectives class
+    // newLvl == -1 on destroy
+    public delegate void TileLevel(Tile type, int oldLvl, int newLvl);
+    static public event TileLevel tileLevel;
 
     public Hexagon hexagon
     {
@@ -37,9 +42,9 @@ public class MovingHex : MonoBehaviour
         level = 0;
     }
 
-    // Use this for initialization
-    void Start()
+    void OnDestroy()
     {
+        tileLevel(type, level, -1);
     }
 
     // Update is called once per frame
@@ -70,6 +75,8 @@ public class MovingHex : MonoBehaviour
             Debug.Log("Level " + hexagon_.ToString() + ": " + level);
             if (levelChanged != null)
                 levelChanged(level);
+            if (tileLevel != null)
+                tileLevel(type, level - 1, level);
         }
     }
 
@@ -81,6 +88,8 @@ public class MovingHex : MonoBehaviour
             Debug.Log("Level " + hexagon_.ToString() + ": " + level);
             if (levelChanged != null)
                 levelChanged(level);
+            if (tileLevel != null)
+                tileLevel(type, level + 1, level);
         }
         else
             IslandManager.Inst.Remove(hexagon_);
