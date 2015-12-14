@@ -80,6 +80,7 @@ public class IslandManager : MonoBehaviour
     
     private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
     private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
+    public Transform barrierHolder; // just a parent for all parts of the barrier in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
     [HideInInspector]
@@ -94,11 +95,16 @@ public class IslandManager : MonoBehaviour
     }
     private bool barrierImproved = false;
 
+    public GameObject[] barrierPrefabs;
+
 
     void InitIsland()
     {
         islandHolder = new GameObject("IslandStuff").transform;
         fragmentsHolder = new GameObject("FragmentsStuff").transform;
+        barrierHolder = new GameObject("BarrierStuff").transform;
+        barrierHolder.transform.position = Vector3.zero;
+        barrierHolder.transform.localScale = Vector3.one;
         layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * Hex.Yscale), new Point(0f, 0f));
         map.Clear();
         hexes.Clear();
@@ -110,6 +116,11 @@ public class IslandManager : MonoBehaviour
         Attach(new Hexagon(0, 0), Tile.Main);
         Attach(new Hexagon(1, -1), TileExt.Random());
         Attach(new Hexagon(-1, 1), TileExt.Random());
+        // DEBUG
+        Attach(new Hexagon(0, 1), TileExt.Random());
+        Attach(new Hexagon(0, -1), TileExt.Random());
+        Attach(new Hexagon(1, 0), TileExt.Random());
+        Attach(new Hexagon(-1, 0), TileExt.Random());
     }
 
     void InitMain()
@@ -252,6 +263,7 @@ public class IslandManager : MonoBehaviour
         IList<Hexagon> ring = Hexagon.Ring(new Hexagon(0, 0), newRad);
         if (ring.All(item => map.ContainsKey(item)))
         {
+            RemoveOldBarrier(barrier);
             barrier = new HashSet<Hexagon>(ring);
             barrierRadius = newRad;
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
@@ -261,6 +273,7 @@ public class IslandManager : MonoBehaviour
                 barrierImproved = true;
             if (barrierChanged != null)
                 barrierChanged();
+            DrawBarrier(ring);
             return true;
         }
         Debug.Log("ExpandBarrier FALSE: " + barrierRadius);
@@ -275,13 +288,56 @@ public class IslandManager : MonoBehaviour
             return false;
         }
         EraseOverTheBarrier();
+        RemoveOldBarrier(barrier);
         --barrierRadius;
-        barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
+        IList<Hexagon> ring = Hexagon.Ring(new Hexagon(0, 0), barrierRadius);
+        barrier = new HashSet<Hexagon>();
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
         mainHex.Downgrade();
         if (barrierChanged != null)
             barrierChanged();
+        DrawBarrier(ring);
         return true;
+    }
+
+    private void RemoveOldBarrier(IEnumerable<Hexagon> oldBar)
+    {
+        foreach (var h in oldBar)
+        {
+            map[h].GetComponent<HexSkin>().ClearBarrier();
+        }
+    }
+
+    private void DrawBarrier(IList<Hexagon> ring)
+    {
+        Queue<Dir> barDirs = new Queue<Dir>();
+        barDirs.Enqueue(Dir.RU);
+        barDirs.Enqueue(Dir.U);
+        barDirs.Enqueue(Dir.LU);
+
+        if (ring.Count == 1)
+        {
+            barDirs.Enqueue(Dir.LD);
+            barDirs.Enqueue(Dir.D);
+            barDirs.Enqueue(Dir.RD);
+            HexSkin skin = map[ring[0]].GetComponent<HexSkin>();
+            skin.DrawBarrier(barDirs);
+            return;
+        }
+        
+        int idx = 0;
+        for (int i = 0; i < 6; ++i)
+        {
+            HexSkin skin = map[ring[idx++]].GetComponent<HexSkin>();
+            skin.DrawBarrier(barDirs);
+            barDirs.Dequeue();
+            for (int j = 0; j < barrierRadius - 1; ++j)
+            {
+                skin = map[ring[idx++]].GetComponent<HexSkin>();
+                skin.DrawBarrier(barDirs);
+            }
+            barDirs.Enqueue((Dir)((i + 3) % 6));
+        }
     }
 
     // erase everything over the barrier

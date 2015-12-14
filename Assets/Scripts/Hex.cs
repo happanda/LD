@@ -20,6 +20,16 @@ public class Point
     public readonly float y;
 }
 
+public enum Dir
+{
+    RU,
+    U,
+    LU,
+    LD,
+    D,
+    RD,
+}
+
 public class Hexagon : System.IEquatable<Hexagon>
 {
     public Hexagon(int q, int r, int s)

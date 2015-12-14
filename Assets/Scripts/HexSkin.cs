@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Random = UnityEngine.Random;
 using System.Collections;
+using System.Collections.Generic;
 
 public class HexSkin : MonoBehaviour
 {
@@ -34,11 +35,6 @@ public class HexSkin : MonoBehaviour
         IslandManager.Inst.barrierChanged += OnBarrierChanged;
     }
 
-    // Use this for initialization
-    void Start()
-    {
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -47,14 +43,14 @@ public class HexSkin : MonoBehaviour
 
     void OnBarrierChanged()
     {
-        if (movingHex.InBarrier())
-        {
-            spriteRenderer.color = Color.red;
-        }
-        else
-        {
-            spriteRenderer.color = defaultColor;
-        }
+        //if (movingHex.InBarrier())
+        //{
+        //    spriteRenderer.color = Color.red;
+        //}
+        //else
+        //{
+        //    spriteRenderer.color = defaultColor;
+        //}
     }
 
     public void HighlightKnobs(int count)
@@ -63,6 +59,27 @@ public class HexSkin : MonoBehaviour
             knobs[i].Highlight();
         for (int i = count; i < knobs.Length; ++i)
             knobs[i].Hide();
+    }
+
+    public void DrawBarrier(IEnumerable<Dir> dir)
+    {
+        foreach (var d in dir)
+        {
+            GameObject prefab = IslandManager.Inst.barrierPrefabs[(int)d];
+            GameObject bar = Instantiate(prefab) as GameObject;
+            Vector3 pos = transform.position + prefab.transform.position;
+            bar.transform.SetParent(IslandManager.Inst.barrierHolder);
+            bar.transform.localScale = Vector3.one;
+            bar.transform.position = pos;
+        }
+    }
+
+    public void ClearBarrier()
+    {
+        foreach (Transform child in IslandManager.Inst.barrierHolder)
+        {
+            Destroy(child.gameObject);
+        }
     }
 
     private void OnLevelChanged(int level)
