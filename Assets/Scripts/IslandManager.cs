@@ -278,7 +278,7 @@ public class IslandManager : MonoBehaviour
 
     private void SpawnFragment()
     {
-        GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
+        GameObject fragPrefab = FragPrefabs[0];//Random.Range(0, FragPrefabs.Length)];
         Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
     }
 

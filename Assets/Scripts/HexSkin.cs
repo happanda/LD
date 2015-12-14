@@ -9,6 +9,7 @@ public class HexSkin : MonoBehaviour
     private Color defaultColor;
     private KnobColor[] knobs;
 
+    public Sprite[] sprites;
     public GameObject knobPrefab;
     public float knobX = 0.2f;
     public float knobY = -0.339f;
@@ -67,6 +68,11 @@ public class HexSkin : MonoBehaviour
     private void OnLevelChanged(int level)
     {
         HighlightKnobs(level);
+        --level;
+        if (level < 0)
+            level = 0;
+        if (sprites.Length > level)
+            spriteRenderer.sprite = sprites[level];
     }
 
     void OnDestroy()
