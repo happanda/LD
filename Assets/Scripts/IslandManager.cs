@@ -14,10 +14,12 @@ public enum Tile
     Forest      = 3,
     Hills       = 4,
     Mountains   = 5,
+    Meteor      = 6,
 }
+
 public class TileExt
 {
-    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length;
+    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length - 1; // don't count meteor
     public static Tile Random()
     {
         return (Tile)UnityEngine.Random.Range(1, TilesCount);
@@ -40,6 +42,7 @@ public class IslandManager : MonoBehaviour
     [HideInInspector]
     public Layout layout;
     public GameObject[] FragPrefabs;
+    public GameObject MeteorPrefab;
 
     public float minSpawnTime = 1f;
     public float maxSpawnTime = 1.1f;
@@ -136,6 +139,10 @@ public class IslandManager : MonoBehaviour
         {
             SpawnFragment();
         }
+        else if (Input.GetKeyDown("q"))
+        {
+            SpawnMeteor();
+        }
 
         if (nextSpawnTime < Time.time)
         {
@@ -166,7 +173,24 @@ public class IslandManager : MonoBehaviour
         ExpandBarrier();
     }
 
+    // called from external code: Erase + ShrinkBarrier
     public void Remove(Hexagon hex)
+    {
+        bool needShrink = InBarrier(hex);
+        if (hex != mainHex.hexagon)
+        {
+            Erase(hex);
+            if (needShrink)
+                ShrinkBarrier();
+        }
+        else
+        {
+            GameOver();
+        }
+    }
+
+    // internal use: Erasing tile
+    private void Erase(Hexagon hex)
     {
         MovingHex mh = map[hex];
         map.Remove(hex);
@@ -225,6 +249,7 @@ public class IslandManager : MonoBehaviour
             Debug.Log("ShrinkBarrier FALSE: " + barrierRadius);
             return false;
         }
+        EraseOverTheBarrier();
         --barrierRadius;
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
@@ -234,9 +259,33 @@ public class IslandManager : MonoBehaviour
         return true;
     }
 
+    // erase everything over the barrier
+    private void EraseOverTheBarrier()
+    {
+        IList<Hexagon> toErase = new List<Hexagon>();
+        foreach(var h in hexes)
+        {
+            if (Hexagon.Length(h.hexagon) > barrierRadius)
+                toErase.Add(h.hexagon);
+        }
+        foreach (var h in toErase)
+            Erase(h);
+    }
+
     private void SpawnFragment()
     {
         GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
         Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
+    }
+
+    private void SpawnMeteor()
+    {
+        Instantiate(MeteorPrefab).transform.SetParent(fragmentsHolder);
+    }
+
+    private void GameOver()
+    {
+        barrierRadius = -1;
+        EraseOverTheBarrier();
     }
 }

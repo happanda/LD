@@ -3,15 +3,11 @@ using System.Collections;
 
 public class FragmentSkin : MonoBehaviour
 {
-    public Sprite[] spritePrefabs;
     private SpriteRenderer spriteRenderer;
-    private MovingFragment movingFrag;
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        movingFrag = GetComponent<MovingFragment>();
-        spriteRenderer.sprite = spritePrefabs[(int)movingFrag.type - 1];
     }
 
     // Use this for initialization
