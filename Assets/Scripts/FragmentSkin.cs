@@ -11,7 +11,7 @@ public class FragmentSkin : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         movingFrag = GetComponent<MovingFragment>();
-        //spriteRenderer.sprite = spritePrefabs[(int)movingFrag.type - 1];
+        spriteRenderer.sprite = spritePrefabs[(int)movingFrag.type - 1];
     }
 
     // Use this for initialization
