@@ -24,6 +24,14 @@ public class TileExt
     }
 }
 
+[System.Serializable]
+public struct TileLevelPair
+{
+    public Tile type;
+    public int maxLevel;
+}
+
+
 public class IslandManager : MonoBehaviour
 {
     static public IslandManager Inst;
@@ -37,8 +45,9 @@ public class IslandManager : MonoBehaviour
     public float maxSpawnTime = 1.1f;
     public float minFragSpeed = 2f;
     public float maxFragSpeed = 3f;
-
     private float nextSpawnTime = 0f;
+
+    public TileLevelPair[] maxLevels = new TileLevelPair[TileExt.TilesCount];
 
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
@@ -149,7 +158,6 @@ public class IslandManager : MonoBehaviour
         MovingHex mh = inst.GetComponent<MovingHex>();
         map[hex] = mh;
         mh.SetCoordinates(hex.q, hex.r);
-        mh.type = type;
         hexes.Add(mh);
         maxRadius = Math.Max(maxRadius, Hexagon.Length(hex));
 
@@ -167,6 +175,14 @@ public class IslandManager : MonoBehaviour
     public bool InBarrier(Hexagon hex)
     {
         return barrier.Contains(hex);
+    }
+
+    public int MaxLevel(Tile type)
+    {
+        Debug.Assert(maxLevels.Length == TileExt.TilesCount, "maxLevels array is not long enough");
+        int idx = Array.FindIndex(maxLevels, (p => p.type == type));
+        Debug.Assert(idx >= 0, "Type " + type.ToString() + " not found in list of max levels");
+        return maxLevels[idx].maxLevel;
     }
 
     private void Turn(bool left)

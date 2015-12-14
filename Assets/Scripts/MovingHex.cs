@@ -64,7 +64,7 @@ public class MovingHex : MonoBehaviour
 
     public void Upgrade()
     {
-        if (level < 3)
+        if (level < IslandManager.Inst.MaxLevel(type))
         {
             ++level;
             Debug.Log("Level " + hexagon_.ToString() + ": " + level);
