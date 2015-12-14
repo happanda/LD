@@ -236,7 +236,8 @@ public class IslandManager : MonoBehaviour
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
             if (barrierRadius > 0)
                 mainHex.Upgrade();
-            barrierImproved = true;
+            if (barrierRadius > 0)
+                barrierImproved = true;
             if (barrierChanged != null)
                 barrierChanged();
             return true;
