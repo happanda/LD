@@ -50,13 +50,9 @@ public class KnobColor : MonoBehaviour
         }
     }
 
-    // Use this for initialization
-    void Start()
-    {
-    }
-
     // Update is called once per frame
     void Update()
     {
+        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
     }
 }

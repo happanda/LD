@@ -43,7 +43,7 @@ public static class TileExt
             if (attrs != null && attrs.Length > 0)
                 return ((DescriptionAttribute)attrs[0]).Description;
         }
-        return "UNKNOWN";
+        return "ERROR";
     }
 }
 
@@ -108,8 +108,8 @@ public class IslandManager : MonoBehaviour
         barrierImproved = false;
 
         Attach(new Hexagon(0, 0), Tile.Main);
-        Attach(new Hexagon(1, -1), (Tile)Random.Range(1, (int)TileExt.Random()));
-        Attach(new Hexagon(-1, 1), (Tile)Random.Range(1, (int)TileExt.Random()));
+        Attach(new Hexagon(1, -1), TileExt.Random());
+        Attach(new Hexagon(-1, 1), TileExt.Random());
     }
 
     void InitMain()
