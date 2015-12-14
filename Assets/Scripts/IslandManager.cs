@@ -48,6 +48,8 @@ public class IslandManager : MonoBehaviour
     public float maxSpawnTime = 1.1f;
     public float minFragSpeed = 2f;
     public float maxFragSpeed = 3f;
+    public float meteorProbability = 0.07f;
+
     private float nextSpawnTime = 0f;
 
     public TileLevelPair[] maxLevels = new TileLevelPair[TileExt.TilesCount];
@@ -64,7 +66,12 @@ public class IslandManager : MonoBehaviour
 
     private MovingHex mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
-    private int barrierRadius = -1;
+    public int barrierRadius
+    {
+        get;
+        private set;
+    }
+    private bool barrierImproved = false;
 
 
     void InitIsland()
@@ -77,18 +84,11 @@ public class IslandManager : MonoBehaviour
         barrier.Clear();
         mainHex = null;
         barrierRadius = -1;
+        barrierImproved = false;
 
         Attach(new Hexagon(0, 0), Tile.Main);
-        
-        // romboid map
-        //for (int q = -2; q <= 2; q++)
-        //{
-        //    for (int r = -2; r <= 2; r++)
-        //    {
-        //        Hexagon hex = new Hexagon(q, r);
-        //        Attach(hex, (Tile)Random.Range(1, (int)TileExt.Random()));
-        //    }
-        //}
+        Attach(new Hexagon(1, -1), (Tile)Random.Range(1, (int)TileExt.Random()));
+        Attach(new Hexagon(-1, 1), (Tile)Random.Range(1, (int)TileExt.Random()));
     }
 
     void InitMain()
@@ -146,7 +146,10 @@ public class IslandManager : MonoBehaviour
 
         if (nextSpawnTime < Time.time)
         {
-            SpawnFragment();
+            if (barrierImproved && Random.value < meteorProbability)
+                SpawnMeteor();
+            else
+                SpawnFragment();
             nextSpawnTime = Time.time + Random.Range(minSpawnTime, maxSpawnTime);
         }
     }
@@ -167,7 +170,6 @@ public class IslandManager : MonoBehaviour
         map[hex] = mh;
         mh.SetCoordinates(hex.q, hex.r);
         hexes.Add(mh);
-        maxRadius = Math.Max(maxRadius, Hexagon.Length(hex));
         if (hex.q == 0 && hex.r == 0)
             mainHex = mh;
         ExpandBarrier();
@@ -234,6 +236,7 @@ public class IslandManager : MonoBehaviour
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
             if (barrierRadius > 0)
                 mainHex.Upgrade();
+            barrierImproved = true;
             if (barrierChanged != null)
                 barrierChanged();
             return true;

@@ -34,7 +34,7 @@ public class MovingFragment : MonoBehaviour
 
     public Vector3 RandomStart()
     {
-        int q = Random.Range(-IslandManager.Inst.maxRadius - 1, IslandManager.Inst.maxRadius + 2);
+        int q = Random.Range(-IslandManager.Inst.barrierRadius - 2, IslandManager.Inst.barrierRadius + 3);
         Point pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, new Hexagon(q, 0));
         return new Vector3(pnt.x, outerRadius);
     }
