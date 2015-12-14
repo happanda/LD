@@ -14,15 +14,25 @@ public enum Tile
     Forest      = 3,
     Hills       = 4,
     Mountains   = 5,
+    Meteor      = 6,
 }
+
 public class TileExt
 {
-    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length;
+    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length - 1; // don't count meteor
     public static Tile Random()
     {
         return (Tile)UnityEngine.Random.Range(1, TilesCount);
     }
 }
+
+[System.Serializable]
+public struct TileLevelPair
+{
+    public Tile type;
+    public int maxLevel;
+}
+
 
 public class IslandManager : MonoBehaviour
 {
@@ -32,18 +42,21 @@ public class IslandManager : MonoBehaviour
     [HideInInspector]
     public Layout layout;
     public GameObject[] FragPrefabs;
+    public GameObject MeteorPrefab;
 
     public float minSpawnTime = 1f;
     public float maxSpawnTime = 1.1f;
     public float minFragSpeed = 2f;
     public float maxFragSpeed = 3f;
-
     private float nextSpawnTime = 0f;
+
+    public TileLevelPair[] maxLevels = new TileLevelPair[TileExt.TilesCount];
 
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
 
-    private Transform boardHolder; // just a parent for all generated objects
+    private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
+    private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
     [HideInInspector]
@@ -56,7 +69,8 @@ public class IslandManager : MonoBehaviour
 
     void InitIsland()
     {
-        boardHolder = new GameObject("IslandStuff").transform;
+        islandHolder = new GameObject("IslandStuff").transform;
+        fragmentsHolder = new GameObject("FragmentsStuff").transform;
         layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * Hex.Yscale), new Point(0f, 0f));
         map.Clear();
         hexes.Clear();
@@ -65,7 +79,6 @@ public class IslandManager : MonoBehaviour
         barrierRadius = -1;
 
         Attach(new Hexagon(0, 0), Tile.Main);
-        mainHex = map[new Hexagon(0, 0)];
         
         // romboid map
         //for (int q = -2; q <= 2; q++)
@@ -126,6 +139,10 @@ public class IslandManager : MonoBehaviour
         {
             SpawnFragment();
         }
+        else if (Input.GetKeyDown("q"))
+        {
+            SpawnMeteor();
+        }
 
         if (nextSpawnTime < Time.time)
         {
@@ -145,18 +162,35 @@ public class IslandManager : MonoBehaviour
         GameObject hexPrefab = TilePrefabs[(int)type];
         Quaternion quat = hexPrefab.transform.rotation;
         GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-        inst.transform.SetParent(boardHolder);
+        inst.transform.SetParent(islandHolder);
         MovingHex mh = inst.GetComponent<MovingHex>();
         map[hex] = mh;
         mh.SetCoordinates(hex.q, hex.r);
-        mh.type = type;
         hexes.Add(mh);
         maxRadius = Math.Max(maxRadius, Hexagon.Length(hex));
-
+        if (hex.q == 0 && hex.r == 0)
+            mainHex = mh;
         ExpandBarrier();
     }
 
+    // called from external code: Erase + ShrinkBarrier
     public void Remove(Hexagon hex)
+    {
+        bool needShrink = InBarrier(hex);
+        if (hex != mainHex.hexagon)
+        {
+            Erase(hex);
+            if (needShrink)
+                ShrinkBarrier();
+        }
+        else
+        {
+            GameOver();
+        }
+    }
+
+    // internal use: Erasing tile
+    private void Erase(Hexagon hex)
     {
         MovingHex mh = map[hex];
         map.Remove(hex);
@@ -167,6 +201,14 @@ public class IslandManager : MonoBehaviour
     public bool InBarrier(Hexagon hex)
     {
         return barrier.Contains(hex);
+    }
+
+    public int MaxLevel(Tile type)
+    {
+        Debug.Assert(maxLevels.Length == TileExt.TilesCount, "maxLevels array is not long enough");
+        int idx = Array.FindIndex(maxLevels, (p => p.type == type));
+        Debug.Assert(idx >= 0, "Type " + type.ToString() + " not found in list of max levels");
+        return maxLevels[idx].maxLevel;
     }
 
     private void Turn(bool left)
@@ -190,6 +232,8 @@ public class IslandManager : MonoBehaviour
             barrier = new HashSet<Hexagon>(ring);
             barrierRadius = newRad;
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
+            if (barrierRadius > 0)
+                mainHex.Upgrade();
             if (barrierChanged != null)
                 barrierChanged();
             return true;
@@ -205,17 +249,43 @@ public class IslandManager : MonoBehaviour
             Debug.Log("ShrinkBarrier FALSE: " + barrierRadius);
             return false;
         }
+        EraseOverTheBarrier();
         --barrierRadius;
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
+        mainHex.Downgrade();
         if (barrierChanged != null)
             barrierChanged();
         return true;
     }
 
+    // erase everything over the barrier
+    private void EraseOverTheBarrier()
+    {
+        IList<Hexagon> toErase = new List<Hexagon>();
+        foreach(var h in hexes)
+        {
+            if (Hexagon.Length(h.hexagon) > barrierRadius)
+                toErase.Add(h.hexagon);
+        }
+        foreach (var h in toErase)
+            Erase(h);
+    }
+
     private void SpawnFragment()
     {
         GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
-        Instantiate(fragPrefab);
+        Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
+    }
+
+    private void SpawnMeteor()
+    {
+        Instantiate(MeteorPrefab).transform.SetParent(fragmentsHolder);
+    }
+
+    private void GameOver()
+    {
+        barrierRadius = -1;
+        EraseOverTheBarrier();
     }
 }

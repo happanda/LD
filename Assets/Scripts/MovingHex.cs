@@ -64,7 +64,7 @@ public class MovingHex : MonoBehaviour
 
     public void Upgrade()
     {
-        if (level < 3)
+        if (level < IslandManager.Inst.MaxLevel(type))
         {
             ++level;
             Debug.Log("Level " + hexagon_.ToString() + ": " + level);
@@ -88,26 +88,31 @@ public class MovingHex : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag != "Fragment")
-            return;
-
-        MovingFragment frag = other.GetComponent<MovingFragment>();
-        if (InBarrier())
+        if (other.tag == "Fragment")
         {
+            MovingFragment frag = other.GetComponent<MovingFragment>();
+            if (InBarrier())
+            {
                 // decide which side was hit
-            Vector3 dir = other.transform.position - transform.position;
-            float angle = Mathf.Rad2Deg * Mathf.Atan2(dir.y, dir.x);
-            if (angle < 0)
-                angle += 360f;
-            Hexagon newHex = Hexagon.Neighbor(hexagon_, Mathf.RoundToInt(angle) / 60);
-            IslandManager.Inst.Attach(newHex, frag.type);
-        }
-        else
-        {
-            if (frag.type == type)
-                Upgrade();
+                Vector3 dir = other.transform.position - transform.position;
+                float angle = Mathf.Rad2Deg * Mathf.Atan2(dir.y, dir.x);
+                if (angle < 0)
+                    angle += 360f;
+                Hexagon newHex = Hexagon.Neighbor(hexagon_, Mathf.RoundToInt(angle) / 60);
+                IslandManager.Inst.Attach(newHex, frag.type);
+            }
             else
-                Downgrade();
+            {
+                if (frag.type == type)
+                    Upgrade();
+                else
+                    Downgrade();
+            }
+        }
+        else if (other.tag == "Meteor")
+        {
+            MovingFragment frag = other.GetComponent<MovingFragment>();
+            IslandManager.Inst.Remove(hexagon_);
         }
     }
 }

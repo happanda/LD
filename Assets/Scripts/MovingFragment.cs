@@ -15,7 +15,7 @@ public class MovingFragment : MonoBehaviour
         transform.position = RandomStart();
         flightDir = new Vector3(0f, -1f, 0f);// (Vector3.zero - transform.position).normalized;
         speed = Random.Range(IslandManager.Inst.minFragSpeed, IslandManager.Inst.maxFragSpeed);
-        type = TileExt.Random();
+        //type = Tile.Forest;
     }
 
     // Use this for initialization
