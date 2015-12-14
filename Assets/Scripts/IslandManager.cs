@@ -311,32 +311,34 @@ public class IslandManager : MonoBehaviour
     private void DrawBarrier(IList<Hexagon> ring)
     {
         Queue<Dir> barDirs = new Queue<Dir>();
+        barDirs.Enqueue(Dir.RD);
         barDirs.Enqueue(Dir.RU);
         barDirs.Enqueue(Dir.U);
-        barDirs.Enqueue(Dir.LU);
 
         if (ring.Count == 1)
         {
+            barDirs.Enqueue(Dir.LU);
             barDirs.Enqueue(Dir.LD);
             barDirs.Enqueue(Dir.D);
-            barDirs.Enqueue(Dir.RD);
             HexSkin skin = map[ring[0]].GetComponent<HexSkin>();
             skin.DrawBarrier(barDirs);
             return;
         }
         
-        int idx = 0;
+        int idx = ring.Count - 1;
         for (int i = 0; i < 6; ++i)
         {
             HexSkin skin = map[ring[idx++]].GetComponent<HexSkin>();
             skin.DrawBarrier(barDirs);
             barDirs.Dequeue();
+            idx = idx % ring.Count;
             for (int j = 0; j < barrierRadius - 1; ++j)
             {
                 skin = map[ring[idx++]].GetComponent<HexSkin>();
                 skin.DrawBarrier(barDirs);
             }
-            barDirs.Enqueue((Dir)((i + 3) % 6));
+            barDirs.Enqueue((Dir)((i + 2) % 6));
+            idx = idx % ring.Count;
         }
     }
 
