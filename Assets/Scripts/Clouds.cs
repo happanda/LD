@@ -6,8 +6,8 @@ public class Clouds : MonoBehaviour
 {
     public GameObject[] clouds;
 
-    public float minCloudTime = 3.0f;
-    public float maxCloudTime = 5.0f;
+    public float minCloudTime = 4f;
+    public float maxCloudTime = 5f;
 
     private float nextCloudTime;
 
