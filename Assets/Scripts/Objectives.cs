@@ -129,4 +129,26 @@ public class Objectives : MonoBehaviour
         }
         return true;
     }
+
+    void OnGUI()
+    {
+        if (CheckWinCondition())
+        {
+            GUI.Label(new Rect(10, 10, 100, 20), "Level Is Finished!");
+        }
+
+        else
+        {
+            string objectiveText = "";
+            foreach (ObjectiveCount oc in objectives)
+            {
+                if (oc.obj == Objective.None)
+                    continue;
+                var p = oc.obj.IndexOf();
+                if (levels[p.Key][p.Value] < oc.count)
+                    objectiveText += oc.ToString() + "\n";
+            }
+            GUI.Label(new Rect(10, 10, 1000, 200), objectiveText);
+        }
+    }
 }

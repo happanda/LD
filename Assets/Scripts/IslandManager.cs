@@ -372,4 +372,22 @@ public class IslandManager : MonoBehaviour
         EraseOverTheBarrier();
         Debug.Log("GAME OVER");
     }
+
+    public void LevelFinished()
+    {
+        if (Application.loadedLevelName == "TestScene")
+        {
+            Application.LoadLevel("Level2");
+        }
+        if (Application.loadedLevelName == "Level2")
+        {
+            Application.LoadLevel("Level3");
+        }
+        else
+        {
+            Application.Quit();
+        }
+        Debug.Log("LEVEL FINISHED");
+    }
+
 }
