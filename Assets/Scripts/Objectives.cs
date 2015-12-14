@@ -107,12 +107,7 @@ public class Objectives : MonoBehaviour
             Debug.LogError("Key not found: " + ex.Message);
         }
         if (CheckWinCondition())
-            LevelFinished();
-    }
-
-    private void LevelFinished()
-    {
-        Debug.Log("LEVEL FINISHED");
+            IslandManager.Inst.LevelFinished();
     }
 
     private bool CheckWinCondition()
