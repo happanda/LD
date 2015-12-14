@@ -65,10 +65,10 @@ public class IslandManager : MonoBehaviour
     public GameObject[] FragPrefabs;
     public GameObject MeteorPrefab;
 
-    public float minSpawnTime = 1f;
-    public float maxSpawnTime = 1.1f;
-    public float minFragSpeed = 2f;
-    public float maxFragSpeed = 3f;
+    public float minSpawnTime = 2.5f;
+    public float maxSpawnTime = 4.1f;
+    public float minFragSpeed = 0.5f;
+    public float maxFragSpeed = 2f;
     public float meteorProbability = 0.07f;
 
     private float nextSpawnTime = 0f;
