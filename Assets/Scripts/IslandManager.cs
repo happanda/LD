@@ -52,7 +52,8 @@ public class IslandManager : MonoBehaviour
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
 
-    private Transform boardHolder; // just a parent for all generated objects
+    private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
+    private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
     [HideInInspector]
@@ -65,7 +66,8 @@ public class IslandManager : MonoBehaviour
 
     void InitIsland()
     {
-        boardHolder = new GameObject("IslandStuff").transform;
+        islandHolder = new GameObject("IslandStuff").transform;
+        fragmentsHolder = new GameObject("FragmentsStuff").transform;
         layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * Hex.Yscale), new Point(0f, 0f));
         map.Clear();
         hexes.Clear();
@@ -74,7 +76,6 @@ public class IslandManager : MonoBehaviour
         barrierRadius = -1;
 
         Attach(new Hexagon(0, 0), Tile.Main);
-        mainHex = map[new Hexagon(0, 0)];
         
         // romboid map
         //for (int q = -2; q <= 2; q++)
@@ -154,13 +155,14 @@ public class IslandManager : MonoBehaviour
         GameObject hexPrefab = TilePrefabs[(int)type];
         Quaternion quat = hexPrefab.transform.rotation;
         GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
-        inst.transform.SetParent(boardHolder);
+        inst.transform.SetParent(islandHolder);
         MovingHex mh = inst.GetComponent<MovingHex>();
         map[hex] = mh;
         mh.SetCoordinates(hex.q, hex.r);
         hexes.Add(mh);
         maxRadius = Math.Max(maxRadius, Hexagon.Length(hex));
-
+        if (hex.q == 0 && hex.r == 0)
+            mainHex = mh;
         ExpandBarrier();
     }
 
@@ -206,6 +208,8 @@ public class IslandManager : MonoBehaviour
             barrier = new HashSet<Hexagon>(ring);
             barrierRadius = newRad;
             Debug.Log("ExpandBarrier TRUE: " + barrierRadius);
+            if (barrierRadius > 0)
+                mainHex.Upgrade();
             if (barrierChanged != null)
                 barrierChanged();
             return true;
@@ -224,6 +228,7 @@ public class IslandManager : MonoBehaviour
         --barrierRadius;
         barrier = new HashSet<Hexagon>(Hexagon.Ring(new Hexagon(0, 0), barrierRadius));
         Debug.Log("ShrinkBarrier TRUE: " + barrierRadius);
+        mainHex.Downgrade();
         if (barrierChanged != null)
             barrierChanged();
         return true;
@@ -232,6 +237,6 @@ public class IslandManager : MonoBehaviour
     private void SpawnFragment()
     {
         GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
-        Instantiate(fragPrefab);
+        Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
     }
 }
