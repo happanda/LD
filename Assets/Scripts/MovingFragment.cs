@@ -10,6 +10,8 @@ public class MovingFragment : MonoBehaviour
     private float speed;
     public Tile type;
 
+    private float rotSpeed = Random.Range(60f, 180f) * (Random.value < 0.5f ? -1 : 1);
+
     void Awake()
     {
         transform.position = RandomStart();
@@ -30,6 +32,8 @@ public class MovingFragment : MonoBehaviour
             // if the fragment flies to far from center, destroy it
         if (transform.position.sqrMagnitude > outerRadius * outerRadius * 2)
             Destroy(gameObject);
+        if (type == Tile.Meteor)
+            transform.Rotate(Vector3.forward * Time.deltaTime * rotSpeed);
     }
 
     public Vector3 RandomStart()
