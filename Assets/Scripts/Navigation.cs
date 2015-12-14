@@ -17,7 +17,7 @@ public class Navigation : MonoBehaviour {
 	}
 
 	public void PlayPress() {
-		Application.LoadLevel(1);
+		Application.LoadLevel(2);
 	}
 
 
