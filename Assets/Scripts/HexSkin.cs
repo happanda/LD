@@ -18,10 +18,10 @@ public class HexSkin : MonoBehaviour
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
-        defaultColor = spriteRenderer.color;
         movingHex = GetComponent<MovingHex>();
         movingHex.levelChanged += OnLevelChanged;
+        defaultColor = spriteRenderer.color;
+        UpdateSortinOrder();
 
         knobs = new KnobColor[IslandManager.Inst.MaxLevel(movingHex.type)];
         float xleft = -knobX * (knobs.Length / 2) + (1 - knobs.Length % 2) * (knobX / 2f);
@@ -33,25 +33,17 @@ public class HexSkin : MonoBehaviour
             knob.transform.localPosition = pos;
             knobs[i] = knob.GetComponent<KnobColor>();
         }
-        IslandManager.Inst.barrierChanged += OnBarrierChanged;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 100f);
+        UpdateSortinOrder();
     }
 
-    void OnBarrierChanged()
+    private void UpdateSortinOrder()
     {
-        //if (movingHex.InBarrier())
-        //{
-        //    spriteRenderer.color = Color.red;
-        //}
-        //else
-        //{
-        //    spriteRenderer.color = defaultColor;
-        //}
+        OffsetCoord coord = OffsetCoord.QoffsetFromCube(OffsetCoord.ODD, movingHex.hexagon);
+        spriteRenderer.sortingOrder = 10 * coord.row + (coord.col % 2) * 5;
     }
 
     public void HighlightKnobs(int count)
@@ -99,7 +91,6 @@ public class HexSkin : MonoBehaviour
 
     void OnDestroy()
     {
-        IslandManager.Inst.barrierChanged -= OnBarrierChanged;
         movingHex.levelChanged -= OnLevelChanged;
     }
 }

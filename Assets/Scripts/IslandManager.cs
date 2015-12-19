@@ -27,6 +27,7 @@ public class IslandManager : MonoBehaviour
     private IDictionary<Tile, GameObject> tilePrefabs = new Dictionary<Tile, GameObject>();
     private IDictionary<Tile, GameObject> fragPrefabs = new Dictionary<Tile, GameObject>();
     private GameObject meteorPrefab;
+    private IDictionary<Tile, int> maxLevels = new Dictionary<Tile, int>();
 
     private float nextSpawnTime = 0f;
 
@@ -55,18 +56,22 @@ public class IslandManager : MonoBehaviour
         {
             tilePrefabs[t] = t.TilePrefab();
             fragPrefabs[t] = t.FragPrefab();
+            // maximum level is the prefab's number of sprites
+            var hexSkin = t.TilePrefab().GetComponent<HexSkin>();
+            maxLevels[t] = hexSkin.sprites.Length;
         }
         meteorPrefab = GameObject.Find("MeteorPrefab");
-    }
 
-    void InitIsland()
-    {
         islandHolder = new GameObject("IslandStuff").transform;
         fragmentsHolder = new GameObject("FragmentsStuff").transform;
         barrierHolder = new GameObject("BarrierStuff").transform;
         barrierHolder.transform.position = Vector3.zero;
         barrierHolder.transform.localScale = Vector3.one;
         layout = new Layout(Layout.flat, new Point(Hex.Size, Hex.Size * Hex.Yscale), new Point(0f, 0f));
+    }
+
+    private void InitIsland()
+    {
         map.Clear();
         hexes.Clear();
         barrier.Clear();
@@ -82,11 +87,6 @@ public class IslandManager : MonoBehaviour
         //Attach(new Hexagon(0, -1), TileExt.Random());
         //Attach(new Hexagon(1, 0), TileExt.Random());
         //Attach(new Hexagon(-1, 0), TileExt.Random());
-    }
-
-    void InitMain()
-    {
-        Attach(new Hexagon(0, 0), Tile.Main);
     }
 
     void Awake()
@@ -202,9 +202,7 @@ public class IslandManager : MonoBehaviour
 
     public int MaxLevel(Tile type)
     {
-        // maximum level is the prefab's number of sprites
-        var hexSkin = type.Prefab().GetComponent<HexSkin>();
-        return hexSkin.sprites.Length;
+        return maxLevels[type];
     }
 
     private void Turn(bool left)
