@@ -11,11 +11,8 @@ public class IslandManager : MonoBehaviour
 {
     static public IslandManager Inst;
 
-    public GameObject[] TilePrefabs;
     [HideInInspector]
     public Layout layout;
-    public GameObject[] FragPrefabs;
-    public GameObject MeteorPrefab;
 
     public float minSpawnTime = 2.5f;
     public float maxSpawnTime = 4.1f;
@@ -23,19 +20,23 @@ public class IslandManager : MonoBehaviour
     public float maxFragSpeed = 2f;
     public float meteorProbability = 0.07f;
 
-    private float nextSpawnTime = 0f;
-
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
-    
+
+
+    private IDictionary<Tile, GameObject> tilePrefabs = new Dictionary<Tile, GameObject>();
+    private IDictionary<Tile, GameObject> fragPrefabs = new Dictionary<Tile, GameObject>();
+    private GameObject meteorPrefab;
+
+    private float nextSpawnTime = 0f;
+
+
     private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
     private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
     public Transform barrierHolder; // just a parent for all parts of the barrier in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
-    [HideInInspector]
-    public int maxRadius = 0; // maximum distance of tiles from main
-
+    
     private MovingHex mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
     public int barrierRadius
@@ -47,6 +48,16 @@ public class IslandManager : MonoBehaviour
 
     public GameObject[] barrierPrefabs;
 
+
+    private void InitData()
+    {
+        foreach (Tile t in Enum.GetValues(typeof(Tile)))
+        {
+            tilePrefabs[t] = t.TilePrefab();
+            fragPrefabs[t] = t.FragPrefab();
+        }
+        meteorPrefab = GameObject.Find("MeteorPrefab");
+    }
 
     void InitIsland()
     {
@@ -88,6 +99,8 @@ public class IslandManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        InitData();
         InitIsland();
         nextSpawnTime = 2f;
     }
@@ -144,7 +157,7 @@ public class IslandManager : MonoBehaviour
             return;
         }
         Point pnt = Layout.HexagonToPixel(layout, hex);
-        GameObject hexPrefab = TilePrefabs[(int)type];
+        GameObject hexPrefab = tilePrefabs[type];
         Quaternion quat = hexPrefab.transform.rotation;
         GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
         inst.transform.SetParent(islandHolder);
@@ -307,13 +320,13 @@ public class IslandManager : MonoBehaviour
 
     private void SpawnFragment()
     {
-        GameObject fragPrefab = FragPrefabs[Random.Range(0, FragPrefabs.Length)];
+        GameObject fragPrefab = fragPrefabs[TileExt.Random()];
         Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
     }
 
     private void SpawnMeteor()
     {
-        Instantiate(MeteorPrefab).transform.SetParent(fragmentsHolder);
+        Instantiate(meteorPrefab).transform.SetParent(fragmentsHolder);
     }
 
     private void GameOver()

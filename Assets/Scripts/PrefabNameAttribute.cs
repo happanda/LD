@@ -1,10 +1,24 @@
 ﻿using System;
 using System.Collections;
 
-[AttributeUsage(AttributeTargets.All)]
-public class PrefabNameAttribute : Attribute
+
+public class TilePrefabNameAttribute : Attribute
 {
-    public PrefabNameAttribute(string prefabName)
+    public TilePrefabNameAttribute(string prefabName)
+    {
+        Name = prefabName;
+    }
+
+    public string Name
+    {
+        get;
+        set;
+    }
+}
+
+public class FragPrefabNameAttribute : Attribute
+{
+    public FragPrefabNameAttribute(string prefabName)
     {
         Name = prefabName;
     }

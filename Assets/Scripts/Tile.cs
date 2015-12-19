@@ -8,27 +8,33 @@ using System.Reflection;
 public enum Tile
 {
     [Description("Tree")]
-    [PrefabNameAttribute("MainTilePrefab")]
+    [TilePrefabNameAttribute("MainTilePrefab")]
+    [FragPrefabNameAttribute("MainFragPrefab")]
     Main = 0,
 
     [Description("Desert")]
-    [PrefabNameAttribute("DesertTilePrefab")]
+    [TilePrefabNameAttribute("DesertTilePrefab")]
+    [FragPrefabNameAttribute("DesertFragPrefab")]
     Desert = 1,
 
     [Description("Field")]
-    [PrefabNameAttribute("FieldTilePrefab")]
+    [TilePrefabNameAttribute("FieldTilePrefab")]
+    [FragPrefabNameAttribute("FieldFragPrefab")]
     Field = 2,
 
     [Description("Forest")]
-    [PrefabNameAttribute("ForestTilePrefab")]
+    [TilePrefabNameAttribute("ForestTilePrefab")]
+    [FragPrefabNameAttribute("ForestFragPrefab")]
     Forest = 3,
 
     [Description("Hills")]
-    [PrefabNameAttribute("HillsTilePrefab")]
+    [TilePrefabNameAttribute("HillsTilePrefab")]
+    [FragPrefabNameAttribute("HillsFragPrefab")]
     Hills = 4,
 
     [Description("Mountains")]
-    [PrefabNameAttribute("MountainsTilePrefab")]
+    [TilePrefabNameAttribute("MountainsTilePrefab")]
+    [FragPrefabNameAttribute("MountainsFragPrefab")]
     Mountains = 5,
 }
 
@@ -62,18 +68,37 @@ public static class TileExt
     }
 
     /// <summary>
-    ///  Returns the prefab for this type of tile.
+    ///  Returns the Tile prefab for this type of tile.
     /// </summary>
-    public static GameObject Prefab(this Tile type)
+    public static GameObject TilePrefab(this Tile type)
     {
         FieldInfo fi = type.GetType().GetField(type.ToString());
 
         if (null != fi)
         {
-            object[] attrs = fi.GetCustomAttributes(typeof(PrefabNameAttribute), true);
+            object[] attrs = fi.GetCustomAttributes(typeof(TilePrefabNameAttribute), true);
             if (attrs != null && attrs.Length > 0)
             {
-                string prefabName = ((PrefabNameAttribute)attrs[0]).Name;
+                string prefabName = ((TilePrefabNameAttribute)attrs[0]).Name;
+                return GameObject.Find(prefabName);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    ///  Returns the fragment prefab for this type of tile.
+    /// </summary>
+    public static GameObject FragPrefab(this Tile type)
+    {
+        FieldInfo fi = type.GetType().GetField(type.ToString());
+
+        if (null != fi)
+        {
+            object[] attrs = fi.GetCustomAttributes(typeof(FragPrefabNameAttribute), true);
+            if (attrs != null && attrs.Length > 0)
+            {
+                string prefabName = ((FragPrefabNameAttribute)attrs[0]).Name;
                 return GameObject.Find(prefabName);
             }
         }
