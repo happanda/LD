@@ -4,8 +4,6 @@ using System.Collections;
 public class MovingHex : MonoBehaviour
 {
     private Hexagon hexagon_; // actual coordinates
-    private PolygonCollider2D polyCollider;
-    private Rigidbody2D rb2D;
 
     public float animationSpeed = 7f;
     public Tile type; // type of the tile
@@ -37,8 +35,6 @@ public class MovingHex : MonoBehaviour
     void Awake()
     {
         Debug.Log("MovingHex.Awake");
-        polyCollider = GetComponent<PolygonCollider2D>();
-        rb2D = GetComponent<Rigidbody2D>();
         level = 0;
     }
 

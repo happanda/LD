@@ -4,55 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.ComponentModel;
 using System.Reflection;
-
-
-public enum Tile
-{
-    [Description("Tower")]
-    Main        = 0,
-    [Description("Desert")]
-    Desert      = 1,
-    [Description("Field")]
-    Field       = 2,
-    [Description("Forest")]
-    Forest      = 3,
-    [Description("Hills")]
-    Hills       = 4,
-    [Description("Mountains")]
-    Mountains   = 5,
-    [Description("Meteor")]
-    Meteor      = 6,
-}
-
-public static class TileExt
-{
-    public static readonly int TilesCount = Enum.GetValues(typeof(Tile)).Length - 1; // don't count meteor
-    public static Tile Random()
-    {
-        return (Tile)UnityEngine.Random.Range(1, TilesCount);
-    }
-    public static String Str(this Tile type)
-    {
-        FieldInfo fi = type.GetType().GetField(type.ToString());
-
-        if (null != fi)
-        {
-            object[] attrs = fi.GetCustomAttributes(typeof(DescriptionAttribute), true);
-            if (attrs != null && attrs.Length > 0)
-                return ((DescriptionAttribute)attrs[0]).Description;
-        }
-        return "ERROR";
-    }
-}
-
-[System.Serializable]
-public struct TileLevelPair
-{
-    public Tile type;
-    public int maxLevel;
-}
 
 
 public class IslandManager : MonoBehaviour
@@ -72,8 +24,6 @@ public class IslandManager : MonoBehaviour
     public float meteorProbability = 0.07f;
 
     private float nextSpawnTime = 0f;
-
-    public TileLevelPair[] maxLevels = new TileLevelPair[TileExt.TilesCount];
 
     public delegate void BarrierChanged();
     public event BarrierChanged barrierChanged;
@@ -167,14 +117,14 @@ public class IslandManager : MonoBehaviour
         {
             ShrinkBarrier();
         }
-        else if (Input.GetKeyDown("space"))
-        {
-            SpawnFragment();
-        }
-        else if (Input.GetKeyDown("q"))
-        {
-            SpawnMeteor();
-        }
+        //else if (Input.GetKeyDown("space"))
+        //{
+        //    SpawnFragment();
+        //}
+        //else if (Input.GetKeyDown("q"))
+        //{
+        //    SpawnMeteor();
+        //}
 
         if (nextSpawnTime < Time.time)
         {
@@ -239,10 +189,9 @@ public class IslandManager : MonoBehaviour
 
     public int MaxLevel(Tile type)
     {
-        Debug.Assert(maxLevels.Length == TileExt.TilesCount, "maxLevels array is not long enough");
-        int idx = Array.FindIndex(maxLevels, (p => p.type == type));
-        Debug.Assert(idx >= 0, "Type " + type.ToString() + " not found in list of max levels");
-        return maxLevels[idx].maxLevel;
+        // maximum level is the prefab's number of sprites
+        var hexSkin = type.Prefab().GetComponent<HexSkin>();
+        return hexSkin.sprites.Length;
     }
 
     private void Turn(bool left)
@@ -304,7 +253,8 @@ public class IslandManager : MonoBehaviour
     {
         foreach (var h in oldBar)
         {
-            map[h].GetComponent<HexSkin>().ClearBarrier();
+            if (map.ContainsKey(h))
+                map[h].GetComponent<HexSkin>().ClearBarrier();
         }
     }
 
