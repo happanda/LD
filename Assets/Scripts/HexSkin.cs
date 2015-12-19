@@ -21,7 +21,7 @@ public class HexSkin : MonoBehaviour
         movingHex = GetComponent<MovingHex>();
         movingHex.levelChanged += OnLevelChanged;
         defaultColor = spriteRenderer.color;
-        UpdateSortinOrder();
+        UpdateSortingOrder();
 
         knobs = new KnobColor[IslandManager.Inst.MaxLevel(movingHex.type)];
         float xleft = -knobX * (knobs.Length / 2) + (1 - knobs.Length % 2) * (knobX / 2f);
@@ -37,10 +37,10 @@ public class HexSkin : MonoBehaviour
 
     void Update()
     {
-        UpdateSortinOrder();
+        UpdateSortingOrder();
     }
 
-    private void UpdateSortinOrder()
+    private void UpdateSortingOrder()
     {
         OffsetCoord coord = OffsetCoord.QoffsetFromCube(OffsetCoord.ODD, movingHex.hexagon);
         spriteRenderer.sortingOrder = 10 * coord.row + (coord.col % 2) * 5;
