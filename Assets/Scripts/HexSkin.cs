@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 public class HexSkin : MonoBehaviour
 {
+    private MovableHex moveHex;
     private SpriteRenderer spriteRenderer;
     private Color defaultColor;
     private KnobColor[] knobs;
@@ -17,6 +18,7 @@ public class HexSkin : MonoBehaviour
     void Awake()
     {
         Debug.Log("HexSkin.Awake");
+        moveHex = GetComponent<MovableHex>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         defaultColor = spriteRenderer.color;
 
@@ -34,6 +36,7 @@ public class HexSkin : MonoBehaviour
 
     void Update()
     {
+        UpdateSortingOrder(moveHex.hexagon);
     }
 
     public void SetLevel(int lvl)
@@ -49,7 +52,7 @@ public class HexSkin : MonoBehaviour
     public void UpdateSortingOrder(Hexagon hexagon)
     {
         OffsetCoord coord = OffsetCoord.QoffsetFromCube(OffsetCoord.ODD, hexagon);
-        spriteRenderer.sortingOrder = -(10 * coord.row + (coord.col % 2) * 5);
+        spriteRenderer.sortingOrder = -(10 * coord.row + (Mathf.Abs(coord.col) % 2) * 5);
     }
 
     private void HighlightKnobs(int count)

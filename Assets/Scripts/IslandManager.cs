@@ -14,6 +14,7 @@ public class IslandManager : MonoBehaviour
         // set from the Inspector
     public GameObject[] TilePrefabs;
     public GameObject[] FragPrefabs;
+    public GameObject EmptyTilePrefab;
     public GameObject MeteorPrefab;
 
     [HideInInspector]
@@ -41,10 +42,9 @@ public class IslandManager : MonoBehaviour
     private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
     [HideInInspector]
     public Transform barrierHolder; // just a parent for all parts of the barrier in Hierarchy window
-    private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
-    private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
-    
-    private MovingHex mainHex; // central Tower tile
+    private IDictionary<Hexagon, MovableHex> map = new Dictionary<Hexagon, MovableHex>();
+
+    private GroundTile mainHex; // central Tower tile
     private HashSet<Hexagon> barrier = new HashSet<Hexagon>(); // ring of the barrier
     public int barrierRadius
     {
@@ -70,13 +70,13 @@ public class IslandManager : MonoBehaviour
     {
         foreach (var tp in TilePrefabs)
         {
-            Tile type = tp.GetComponent<MovingHex>().type;
+            Tile type = tp.GetComponent<GroundTile>().Type;
             tilePrefabs[type] = tp;
             var hexSkin = tp.GetComponent<HexSkin>();
             maxLevels[type] = hexSkin.sprites.Length;
         }
         foreach (var fp in FragPrefabs)
-            fragPrefabs[fp.GetComponent<MovingFragment>().type] = fp;
+            fragPrefabs[fp.GetComponent<MovingFragment>().Type] = fp;
 
         islandHolder = new GameObject("IslandStuff").transform;
         fragmentsHolder = new GameObject("FragmentsStuff").transform;
@@ -89,22 +89,18 @@ public class IslandManager : MonoBehaviour
     private void InitIsland()
     {
         map.Clear();
-        hexes.Clear();
         barrier.Clear();
         mainHex = null;
         barrierRadius = -1;
         barrierImproved = false;
 
         CreateTile(new Hexagon(0, 0), Tile.Main);
-        mainHex.Upgrade();
-        var tile1 = CreateTile(new Hexagon(1, -1), TileExt.Random());
-        var tile2 = CreateTile(new Hexagon(-1, 1), TileExt.Random());
-        tile1.Upgrade();
-        tile2.Upgrade();
-        CreateTile(new Hexagon(0, 1), TileExt.Random());
-        CreateTile(new Hexagon(0, -1), TileExt.Random());
-        CreateTile(new Hexagon(1, 0), TileExt.Random());
-        CreateTile(new Hexagon(-1, 0), TileExt.Random());
+        CreateTile(new Hexagon(1, -1), TileExt.Random());
+        CreateTile(new Hexagon(-1, 1), TileExt.Random());
+        CreateEmptyTile(new Hexagon(0, 1));
+        CreateEmptyTile(new Hexagon(0, -1));
+        CreateEmptyTile(new Hexagon(1, 0));
+        CreateEmptyTile(new Hexagon(-1, 0));
     }
 
     void Awake()
@@ -125,9 +121,6 @@ public class IslandManager : MonoBehaviour
 
     void Update()
     {
-        //int horiz = (int)Input.GetAxisRaw("Horizontal");
-        //int verti = (int)Input.GetAxisRaw("Vertical");
-
         if (Input.GetKeyDown("left"))
         {
             Turn(true);
@@ -144,14 +137,6 @@ public class IslandManager : MonoBehaviour
         {
             ShrinkBarrier();
         }
-        //else if (Input.GetKeyDown("space"))
-        //{
-        //    SpawnFragment();
-        //}
-        //else if (Input.GetKeyDown("q"))
-        //{
-        //    SpawnMeteor();
-        //}
 
         if (nextSpawnTime < Time.time)
         {
@@ -164,7 +149,18 @@ public class IslandManager : MonoBehaviour
         }
     }
 
-    private MovingHex CreateTile(Hexagon hex, Tile type)
+    private void Turn(bool left)
+    {
+        var mapCopy = map;
+        map = new Dictionary<Hexagon, MovableHex>();
+        foreach (var mh in mapCopy)
+        {
+            mh.Value.Turn(left);
+            map[mh.Value.hexagon] = mh.Value;
+        }
+    }
+
+    public GroundTile CreateTile(Hexagon hex, Tile type)
     {
         if (map.ContainsKey(hex))
         {
@@ -174,23 +170,44 @@ public class IslandManager : MonoBehaviour
         GameObject hexPrefab = tilePrefabs[type];
         GameObject inst = Instantiate(hexPrefab, Layout.HexagonToPixel(layout, hex), hexPrefab.transform.rotation) as GameObject;
         inst.transform.SetParent(islandHolder);
-        MovingHex mh = inst.GetComponent<MovingHex>();
+
+        MovableHex mh = inst.GetComponent<MovableHex>();
+        mh.hexagon = hex;
         map[hex] = mh;
-        mh.SetCoordinates(hex.q, hex.r);
-        hexes.Add(mh);
+
+        GroundTile gt = inst.GetComponent<GroundTile>();
+        gt.Type = type;
         if (hex.q == 0 && hex.r == 0)
-            mainHex = mh;
-        ExpandBarrier();
-        return mh;
+            mainHex = gt;
+        //ExpandBarrier();
+        return gt;
+    }
+
+    public EmptyHex CreateEmptyTile(Hexagon hex)
+    {
+        if (map.ContainsKey(hex))
+        {
+            Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
+            return null;
+        }
+        GameObject inst = Instantiate(EmptyTilePrefab, Layout.HexagonToPixel(layout, hex), EmptyTilePrefab.transform.rotation) as GameObject;
+        inst.transform.SetParent(islandHolder);
+
+        MovableHex mh = inst.GetComponent<MovableHex>();
+        mh.hexagon = hex;
+        map[hex] = mh;
+        return inst.GetComponent<EmptyHex>();
     }
 
     // called from external code: Erase + ShrinkBarrier
     public void Remove(Hexagon hex)
     {
-        bool needShrink = InBarrier(hex);
-        if (hex != mainHex.hexagon)
+        if (hex.q != 0 || hex.r != 0)
         {
-            Erase(hex);
+            bool needShrink = false;// InBarrier(hex);
+            MovableHex mh = map[hex];
+            map.Remove(hex);
+            Destroy(mh.gameObject);
             if (needShrink)
                 ShrinkBarrier();
         }
@@ -198,15 +215,6 @@ public class IslandManager : MonoBehaviour
         {
             GameOver();
         }
-    }
-
-    // internal use: Erasing tile
-    private void Erase(Hexagon hex)
-    {
-        MovingHex mh = map[hex];
-        map.Remove(hex);
-        hexes.Remove(mh);
-        Destroy(mh.gameObject);
     }
 
     public bool InBarrier(Hexagon hex)
@@ -219,20 +227,9 @@ public class IslandManager : MonoBehaviour
         return maxLevels[type];
     }
 
-    private void Turn(bool left)
-    {
-        Debug.Log("Turn " + (left ? "Left" : "Right"));
-        map.Clear();
-        foreach (var hex in hexes)
-        {
-            Hexagon newHex = hex.hexagon.Rotate(left);
-            map[newHex] = hex;
-            map[newHex].hexagon = newHex;
-        }
-    }
-
     private bool ExpandBarrier()
     {
+        return false;
         int newRad = barrierRadius + 1;
         IList<Hexagon> ring = Hexagon.Ring(new Hexagon(0, 0), newRad);
         if (ring.All(item => map.ContainsKey(item)))
@@ -256,6 +253,7 @@ public class IslandManager : MonoBehaviour
 
     private bool ShrinkBarrier()
     {
+        return false;
         if (barrierRadius == 0)
         {
             Debug.Log("ShrinkBarrier FALSE: " + barrierRadius);
@@ -347,13 +345,13 @@ public class IslandManager : MonoBehaviour
     private void EraseOverTheBarrier()
     {
         IList<Hexagon> toErase = new List<Hexagon>();
-        foreach(var h in hexes)
-        {
-            if (Hexagon.Length(h.hexagon) > barrierRadius)
-                toErase.Add(h.hexagon);
-        }
+        //foreach(var h in hexes)
+        //{
+        //    if (Hexagon.Length(h.hexagon) > barrierRadius)
+        //        toErase.Add(h.hexagon);
+        //}
         foreach (var h in toErase)
-            Erase(h);
+            Remove(h);
     }
 
     private void SpawnFragment()

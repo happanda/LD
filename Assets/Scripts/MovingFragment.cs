@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using Random = UnityEngine.Random;
 using System.Collections;
+using System;
 
 public class MovingFragment : MonoBehaviour
 {
     public float outerRadius = 12f; // radius of random start position
 
+    public Tile Type;
+
     private Vector3 flightDir;
     private float speed;
-    public Tile type;
-
     private float rotSpeed = Random.Range(60f, 180f) * (Random.value < 0.5f ? -1 : 1);
 
     void Awake()

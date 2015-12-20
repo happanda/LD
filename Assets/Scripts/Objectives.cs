@@ -76,7 +76,7 @@ public class Objectives : MonoBehaviour
                     levels[t][i] = 0;
             }
         }
-        MovingHex.tileLevel += OnTileLevel;
+        GroundTile.tileLevel += OnTileLevel;
 
         foreach (var obj in objectives)
         {
@@ -86,7 +86,7 @@ public class Objectives : MonoBehaviour
 
     void OnDestroy()
     {
-        MovingHex.tileLevel -= OnTileLevel;
+        GroundTile.tileLevel -= OnTileLevel;
     }
 
     // Update is called once per frame
