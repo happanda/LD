@@ -86,10 +86,6 @@ public class IslandManager : MonoBehaviour
         CreateTile(new Hexagon(0, 0), Tile.Main);
         CreateTile(new Hexagon(1, -1), TileExt.Random());
         CreateTile(new Hexagon(-1, 1), TileExt.Random());
-        CreateEmptyTile(new Hexagon(0, 1));
-        CreateEmptyTile(new Hexagon(0, -1));
-        CreateEmptyTile(new Hexagon(1, 0));
-        CreateEmptyTile(new Hexagon(-1, 0));
 
         // DEBUG:
         //int map_radius = 5;
@@ -122,21 +118,24 @@ public class IslandManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown("left"))
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             Turn(true);
         }
-        else if (Input.GetKeyDown("right"))
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             Turn(false);
+        }
+        else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            SpawnFragment();
         }
 
         if (nextSpawnTime < Time.time)
         {
-            // TODO: debug
-            //if (barrierImproved && Random.value < meteorProbability)
-            //    SpawnMeteor();
-            //else
+            if (barrier.Radius > 0 && Random.value < meteorProbability)
+                SpawnMeteor();
+            else
                 SpawnFragment();
             nextSpawnTime = Time.time + Random.Range(minSpawnTime, maxSpawnTime);
         }
@@ -222,7 +221,8 @@ public class IslandManager : MonoBehaviour
     private void SpawnFragment()
     {
         GameObject fragPrefab = fragPrefabs[TileExt.Random()];
-        Instantiate(fragPrefab).transform.SetParent(fragmentsHolder);
+        GameObject frag = Instantiate(fragPrefab);
+        frag.transform.SetParent(fragmentsHolder);
     }
 
     private void SpawnMeteor()

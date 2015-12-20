@@ -68,6 +68,7 @@ public class GroundTile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        return;
         if (other.tag == "Fragment")
         {
             MovingFragment frag = other.GetComponent<MovingFragment>();

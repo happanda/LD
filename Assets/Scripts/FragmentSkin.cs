@@ -12,7 +12,7 @@ public class FragmentSkin : MonoBehaviour
 
     void Update()
     {
-        spriteRenderer.sortingOrder = -Mathf.FloorToInt(transform.position.y * 10f);
+        spriteRenderer.sortingOrder = 1000;// -Mathf.FloorToInt(transform.position.y * 10f);
     }
 
 }

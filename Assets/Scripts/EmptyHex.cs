@@ -12,6 +12,7 @@ public class EmptyHex : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        return;
         if (other.tag == "Fragment")
         {
             Hexagon hex = moveHex.hexagon;

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Random = UnityEngine.Random;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -135,6 +136,20 @@ public class Hexagon : System.IEquatable<Hexagon>
     static public int Distance(Hexagon a, Hexagon b)
     {
         return Hexagon.Length(Hexagon.Subtract(a, b));
+    }
+
+    static public Hexagon RandomInCircle(int maxRadius)
+    {
+        int absSum = maxRadius * 2;
+        int q = 0, r = 0;
+        while (q == 0 && r == 0)
+        {
+            q = Random.Range(-maxRadius, maxRadius + 1);
+            int r1 = Mathf.Max(-maxRadius, -q - maxRadius);
+            int r2 = Mathf.Min(maxRadius, -q + maxRadius);
+            r = Random.Range(r1, r2 + 1);
+        }
+        return new Hexagon(q, r);
     }
 
     public override int GetHashCode()
