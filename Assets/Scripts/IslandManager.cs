@@ -157,8 +157,13 @@ public class IslandManager : MonoBehaviour
     {
         if (map.ContainsKey(hex))
         {
-            Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
-            return null;
+            if (map[hex].GetComponent<EmptyHex>() != null)
+                Remove(hex);
+            else
+            {
+                Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
+                return null;
+            }
         }
         GameObject hexPrefab = tilePrefabs[type];
         GameObject inst = Instantiate(hexPrefab, Layout.HexagonToPixel(layout, hex), hexPrefab.transform.rotation) as GameObject;

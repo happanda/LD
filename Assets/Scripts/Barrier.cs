@@ -32,6 +32,9 @@ public class Barrier : MonoBehaviour
         {
             Radius = dist;
             UpdateBarrier();
+            IList<Hexagon> ring = Hexagon.Ring(new Hexagon(0, 0), Radius + 1);
+            foreach (var h in ring)
+                IslandManager.Inst.CreateEmptyTile(h);
         }
     }
 
