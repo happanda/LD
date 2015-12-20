@@ -11,9 +11,15 @@ public class IslandManager : MonoBehaviour
 {
     static public IslandManager Inst;
 
+        // set from the Inspector
+    public GameObject[] TilePrefabs;
+    public GameObject[] FragPrefabs;
+    public GameObject MeteorPrefab;
+
     [HideInInspector]
     public Layout layout;
 
+    public float animationSpeed = 7f;
     public float minSpawnTime = 2.5f;
     public float maxSpawnTime = 4.1f;
     public float minFragSpeed = 0.5f;
@@ -26,7 +32,6 @@ public class IslandManager : MonoBehaviour
 
     private IDictionary<Tile, GameObject> tilePrefabs = new Dictionary<Tile, GameObject>();
     private IDictionary<Tile, GameObject> fragPrefabs = new Dictionary<Tile, GameObject>();
-    private GameObject meteorPrefab;
     private IDictionary<Tile, int> maxLevels = new Dictionary<Tile, int>();
 
     private float nextSpawnTime = 0f;
@@ -34,6 +39,7 @@ public class IslandManager : MonoBehaviour
 
     private Transform islandHolder; // just a parent for all island tiles in Hierarchy window
     private Transform fragmentsHolder; // just a parent for all fragments in Hierarchy window
+    [HideInInspector]
     public Transform barrierHolder; // just a parent for all parts of the barrier in Hierarchy window
     private IDictionary<Hexagon, MovingHex> map = new Dictionary<Hexagon, MovingHex>();
     private IList<MovingHex> hexes = new List<MovingHex>(); // list of all active tiles
@@ -50,17 +56,27 @@ public class IslandManager : MonoBehaviour
     public GameObject[] barrierPrefabs;
 
 
+    public GameObject GetTilePrefab(Tile type)
+    {
+        return tilePrefabs[type];
+    }
+
+    public GameObject GetFragPrefab(Tile type)
+    {
+        return fragPrefabs[type];
+    }
+
     private void InitData()
     {
-        foreach (Tile t in Enum.GetValues(typeof(Tile)))
+        foreach (var tp in TilePrefabs)
         {
-            tilePrefabs[t] = t.TilePrefab();
-            fragPrefabs[t] = t.FragPrefab();
-            // maximum level is the prefab's number of sprites
-            var hexSkin = t.TilePrefab().GetComponent<HexSkin>();
-            maxLevels[t] = hexSkin.sprites.Length;
+            Tile type = tp.GetComponent<MovingHex>().type;
+            tilePrefabs[type] = tp;
+            var hexSkin = tp.GetComponent<HexSkin>();
+            maxLevels[type] = hexSkin.sprites.Length;
         }
-        meteorPrefab = GameObject.Find("MeteorPrefab");
+        foreach (var fp in FragPrefabs)
+            fragPrefabs[fp.GetComponent<MovingFragment>().type] = fp;
 
         islandHolder = new GameObject("IslandStuff").transform;
         fragmentsHolder = new GameObject("FragmentsStuff").transform;
@@ -79,14 +95,16 @@ public class IslandManager : MonoBehaviour
         barrierRadius = -1;
         barrierImproved = false;
 
-        Attach(new Hexagon(0, 0), Tile.Main);
-        Attach(new Hexagon(1, -1), TileExt.Random());
-        Attach(new Hexagon(-1, 1), TileExt.Random());
-        // DEBUG
-        //Attach(new Hexagon(0, 1), TileExt.Random());
-        //Attach(new Hexagon(0, -1), TileExt.Random());
-        //Attach(new Hexagon(1, 0), TileExt.Random());
-        //Attach(new Hexagon(-1, 0), TileExt.Random());
+        CreateTile(new Hexagon(0, 0), Tile.Main);
+        mainHex.Upgrade();
+        var tile1 = CreateTile(new Hexagon(1, -1), TileExt.Random());
+        var tile2 = CreateTile(new Hexagon(-1, 1), TileExt.Random());
+        tile1.Upgrade();
+        tile2.Upgrade();
+        CreateTile(new Hexagon(0, 1), TileExt.Random());
+        CreateTile(new Hexagon(0, -1), TileExt.Random());
+        CreateTile(new Hexagon(1, 0), TileExt.Random());
+        CreateTile(new Hexagon(-1, 0), TileExt.Random());
     }
 
     void Awake()
@@ -103,10 +121,6 @@ public class IslandManager : MonoBehaviour
         InitData();
         InitIsland();
         nextSpawnTime = 2f;
-    }
-
-    void Start()
-    {
     }
 
     void Update()
@@ -141,25 +155,24 @@ public class IslandManager : MonoBehaviour
 
         if (nextSpawnTime < Time.time)
         {
-            if (barrierImproved && Random.value < meteorProbability)
-                SpawnMeteor();
-            else
+            // TODO: debug
+            //if (barrierImproved && Random.value < meteorProbability)
+            //    SpawnMeteor();
+            //else
                 SpawnFragment();
             nextSpawnTime = Time.time + Random.Range(minSpawnTime, maxSpawnTime);
         }
     }
 
-    public void Attach(Hexagon hex, Tile type)
+    private MovingHex CreateTile(Hexagon hex, Tile type)
     {
         if (map.ContainsKey(hex))
         {
-            Debug.LogError("Attach in place of existing tile: " + hex.ToString());
-            return;
+            Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
+            return null;
         }
-        Point pnt = Layout.HexagonToPixel(layout, hex);
         GameObject hexPrefab = tilePrefabs[type];
-        Quaternion quat = hexPrefab.transform.rotation;
-        GameObject inst = Instantiate(hexPrefab, new Vector3(pnt.x, pnt.y, 0f), quat) as GameObject;
+        GameObject inst = Instantiate(hexPrefab, Layout.HexagonToPixel(layout, hex), hexPrefab.transform.rotation) as GameObject;
         inst.transform.SetParent(islandHolder);
         MovingHex mh = inst.GetComponent<MovingHex>();
         map[hex] = mh;
@@ -168,6 +181,7 @@ public class IslandManager : MonoBehaviour
         if (hex.q == 0 && hex.r == 0)
             mainHex = mh;
         ExpandBarrier();
+        return mh;
     }
 
     // called from external code: Erase + ShrinkBarrier
@@ -264,8 +278,8 @@ public class IslandManager : MonoBehaviour
     {
         foreach (var h in oldBar)
         {
-            if (map.ContainsKey(h))
-                map[h].GetComponent<HexSkin>().ClearBarrier();
+            //if (map.ContainsKey(h))
+            //    map[h].GetComponent<HexSkin>().ClearBarrier();
         }
     }
 
@@ -282,7 +296,7 @@ public class IslandManager : MonoBehaviour
             barDirs.Enqueue(Dir.LD);
             barDirs.Enqueue(Dir.D);
             HexSkin skin = map[ring[0]].GetComponent<HexSkin>();
-            skin.DrawBarrier(barDirs);
+            //skin.DrawBarrier(barDirs);
             return;
         }
         
@@ -290,18 +304,44 @@ public class IslandManager : MonoBehaviour
         for (int i = 0; i < 6; ++i)
         {
             HexSkin skin = map[ring[idx++]].GetComponent<HexSkin>();
-            skin.DrawBarrier(barDirs);
+            //skin.DrawBarrier(barDirs);
             barDirs.Dequeue();
             idx = idx % ring.Count;
             for (int j = 0; j < barrierRadius - 1; ++j)
             {
                 skin = map[ring[idx++]].GetComponent<HexSkin>();
-                skin.DrawBarrier(barDirs);
+                //skin.DrawBarrier(barDirs);
             }
             barDirs.Enqueue((Dir)((i + 2) % 6));
             idx = idx % ring.Count;
         }
     }
+
+    //public void DrawBarrier(IEnumerable<Dir> dir)
+    //{
+    //    foreach (var d in dir)
+    //    {
+    //        GameObject prefab = IslandManager.Inst.barrierPrefabs[(int)d];
+    //        GameObject bar = Instantiate(prefab) as GameObject;
+    //        Vector3 pos = transform.position + prefab.transform.position;
+    //        bar.transform.SetParent(IslandManager.Inst.barrierHolder);
+    //        bar.transform.localScale = Vector3.one;
+    //        bar.transform.position = pos;
+    //        if (d == Dir.D || d == Dir.LD || d == Dir.RD)
+    //            bar.GetComponent<SpriteRenderer>().sortingOrder = spriteRenderer.sortingOrder + 50;
+    //        else
+    //            bar.GetComponent<SpriteRenderer>().sortingOrder = spriteRenderer.sortingOrder - 50;
+    //    }
+    //}
+
+    //public void ClearBarrier()
+    //{
+    //    foreach (Transform child in IslandManager.Inst.barrierHolder)
+    //    {
+    //        Destroy(child.gameObject);
+    //    }
+    //}
+
 
     // erase everything over the barrier
     private void EraseOverTheBarrier()
@@ -324,7 +364,7 @@ public class IslandManager : MonoBehaviour
 
     private void SpawnMeteor()
     {
-        Instantiate(meteorPrefab).transform.SetParent(fragmentsHolder);
+        Instantiate(MeteorPrefab).transform.SetParent(fragmentsHolder);
     }
 
     private void GameOver()

@@ -313,14 +313,14 @@ public class Layout
     static public Orientation pointy = new Orientation(Mathf.Sqrt(3.0f), Mathf.Sqrt(3.0f) / 2.0f, 0.0f, 3.0f / 2.0f, Mathf.Sqrt(3.0f) / 3.0f, -1.0f / 3.0f, 0.0f, 2.0f / 3.0f, 0.5f);
     static public Orientation flat = new Orientation(3.0f / 2.0f, 0.0f, Mathf.Sqrt(3.0f) / 2.0f, Mathf.Sqrt(3.0f), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, Mathf.Sqrt(3.0f) / 3.0f, 0.0f);
 
-    static public Point HexagonToPixel(Layout layout, Hexagon h)
+    static public Vector3 HexagonToPixel(Layout layout, Hexagon h)
     {
         Orientation M = layout.orientation;
         Point size = layout.size;
         Point origin = layout.origin;
         float x = (M.f0 * h.q + M.f1 * h.r) * size.x;
         float y = (M.f2 * h.q + M.f3 * h.r) * size.y;
-        return new Point(x + origin.x, y + origin.y);
+        return new Vector3(x + origin.x, y + origin.y, 0f);
     }
 
 
@@ -345,14 +345,14 @@ public class Layout
     }
 
 
-    static public List<Point> PolygonCorners(Layout layout, Hexagon h)
+    static public List<Vector3> PolygonCorners(Layout layout, Hexagon h)
     {
-        List<Point> corners = new List<Point>{};
-        Point center = Layout.HexagonToPixel(layout, h);
+        List<Vector3> corners = new List<Vector3> { };
+        Vector3 center = Layout.HexagonToPixel(layout, h);
         for (int i = 0; i < 6; i++)
         {
             Point offset = Layout.HexagonCornerOffset(layout, i);
-            corners.Add(new Point(center.x + offset.x, center.y + offset.y));
+            corners.Add(new Vector3(center.x + offset.x, center.y + offset.y, 0f));
         }
         return corners;
     }

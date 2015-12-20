@@ -5,13 +5,10 @@ public class MovingHex : MonoBehaviour
 {
     private Hexagon hexagon_; // actual coordinates
 
-    public float animationSpeed = 7f;
     public Tile type; // type of the tile
     private int level; // level if upgrade
 
-    // event for HexSkin of this same hex
-    public delegate void LevelChanged(int level);
-    public event LevelChanged levelChanged;
+    private HexSkin hexSkin;
 
     // event for Objectives class
     // newLvl == -1 on destroy
@@ -24,6 +21,7 @@ public class MovingHex : MonoBehaviour
         set
         {
             hexagon_ = value;
+            hexSkin.UpdateSortingOrder(hexagon);
         }
     }
 
@@ -35,32 +33,27 @@ public class MovingHex : MonoBehaviour
     void Awake()
     {
         Debug.Log("MovingHex.Awake");
-        level = 0;
+        level = -1;
+        hexSkin = GetComponent<HexSkin>();
+        hexSkin.SetLevel(level);
     }
 
     void OnDestroy()
     {
-        tileLevel(type, level, -1);
+        if (tileLevel != null)
+            tileLevel(type, level, -1);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Point pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, hexagon);
-        Vector3 dest = new Vector3(pnt.x, pnt.y, 0f);
+        Vector3 dest = Layout.HexagonToPixel(IslandManager.Inst.layout, hexagon);
         float dist = (transform.position - dest).sqrMagnitude;
         if (dist > float.Epsilon)
         {
-            //Vector3 newPos = Vector3.RotateTowards(transform.position, dest, 10f * Time.deltaTime, 0f);
-            //Vector3 newPos = Vector3.MoveTowards(transform.position, dest, 3f * Time.deltaTime);
-            Vector3 newPos = Vector3.Slerp(transform.position, dest, animationSpeed * Time.deltaTime);
+            Vector3 newPos = Vector3.Slerp(transform.position, dest, IslandManager.Inst.animationSpeed * Time.deltaTime);
             transform.position = newPos;
+            hexSkin.UpdateSortingOrder(hexagon);
         }
-    }
-
-    public bool InBarrier()
-    {
-        return IslandManager.Inst.InBarrier(hexagon_);
     }
 
     public void Upgrade()
@@ -68,9 +61,8 @@ public class MovingHex : MonoBehaviour
         if (level < IslandManager.Inst.MaxLevel(type))
         {
             ++level;
-            Debug.Log("Level " + hexagon_.ToString() + ": " + level);
-            if (levelChanged != null)
-                levelChanged(level);
+            //Debug.Log("Level " + hexagon_.ToString() + ": " + level);
+            hexSkin.SetLevel(level);
             if (tileLevel != null)
                 tileLevel(type, level - 1, level);
         }
@@ -81,9 +73,8 @@ public class MovingHex : MonoBehaviour
         if (level > 0)
         {
             --level;
-            Debug.Log("Level " + hexagon_.ToString() + ": " + level);
-            if (levelChanged != null)
-                levelChanged(level);
+            //Debug.Log("Level " + hexagon_.ToString() + ": " + level);
+            hexSkin.SetLevel(level);
             if (tileLevel != null)
                 tileLevel(type, level + 1, level);
         }
@@ -91,20 +82,20 @@ public class MovingHex : MonoBehaviour
             IslandManager.Inst.Remove(hexagon_);
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    private bool InBarrier()
+    {
+        return IslandManager.Inst.InBarrier(hexagon_);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "Fragment")
         {
             MovingFragment frag = other.GetComponent<MovingFragment>();
-            if (InBarrier())
+            if (level == -1)
             {
-                // decide which side was hit
-                Vector3 dir = other.transform.position - transform.position;
-                float angle = Mathf.Rad2Deg * Mathf.Atan2(dir.y, dir.x);
-                if (angle < 0)
-                    angle += 360f;
-                Hexagon newHex = Hexagon.Neighbor(hexagon_, Mathf.RoundToInt(angle) / 60);
-                IslandManager.Inst.Attach(newHex, frag.type);
+                type = frag.type;
+                Upgrade();
             }
             else
             {

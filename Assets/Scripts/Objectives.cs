@@ -72,7 +72,7 @@ public class Objectives : MonoBehaviour
         {
             if (levels.ContainsKey(t))
             {
-                for (int i = 0; i <= IslandManager.Inst.maxLevels[(int)t].maxLevel; ++i)
+                for (int i = 0; i <= IslandManager.Inst.MaxLevel(t); ++i)
                     levels[t][i] = 0;
             }
         }
