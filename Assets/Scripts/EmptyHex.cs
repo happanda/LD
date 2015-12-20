@@ -12,13 +12,15 @@ public class EmptyHex : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        return;
         if (other.tag == "Fragment")
         {
-            Hexagon hex = moveHex.hexagon;
-            IslandManager.Inst.Remove(hex);
             MovingFragment frag = other.GetComponent<MovingFragment>();
-            IslandManager.Inst.CreateTile(hex, frag.Type);
+            if (frag.Vertical == moveHex.hexagon)
+            {
+                Hexagon hex = moveHex.hexagon;
+                IslandManager.Inst.Remove(hex);
+                IslandManager.Inst.CreateTile(hex, frag.Type);
+            }
         }
     }
 

@@ -68,14 +68,16 @@ public class GroundTile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        return;
         if (other.tag == "Fragment")
         {
             MovingFragment frag = other.GetComponent<MovingFragment>();
-            if (frag.Type == Type)
-                Upgrade();
-            else
-                Downgrade();
+            if (frag.Vertical == moveHex.hexagon)
+            {
+                if (frag.Type == Type)
+                    Upgrade();
+                else
+                    Downgrade();
+            }
         }
         else if (other.tag == "Meteor")
         {
