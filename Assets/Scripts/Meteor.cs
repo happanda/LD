@@ -1,19 +1,16 @@
 ﻿using UnityEngine;
-using Random = UnityEngine.Random;
 using System.Collections;
-using System;
 
-public class MovingFragment : MonoBehaviour
+public class Meteor : MonoBehaviour
 {
+    public GameObject Shadow;
     public float outerRadius = 12f; // radius of random start position
-
-    public Tile Type;
 
     private Hexagon vertical_;
     private Vector3 flightDir;
     private float speed;
     private float rotSpeed = Random.Range(60f, 180f) * (Random.value < 0.5f ? -1 : 1);
-    private FragmentSkin fragSkin;
+    private GameObject shadow;
 
     public Hexagon Vertical
     {
@@ -25,19 +22,12 @@ public class MovingFragment : MonoBehaviour
         transform.position = RandomStart();
         flightDir = new Vector3(0f, -1f, 0f);
         speed = Random.Range(IslandManager.Inst.minFragSpeed, IslandManager.Inst.maxFragSpeed);
-        fragSkin = GetComponent<FragmentSkin>();
-
-        if (fragSkin == null)
-            Debug.LogError("fragSkin is null!!");
-        fragSkin.SetVertical(vertical_);
-        fragSkin.SetSortingOrder(vertical_.SortingOrder() + 1);
-        //type = Tile.Forest;
     }
 
     void Update()
     {
         transform.position = transform.position + flightDir * speed * Time.deltaTime;
-            // if the fragment flies to far from center, destroy it
+        // if the fragment flies to far from center, destroy it
         if (transform.position.sqrMagnitude > outerRadius * outerRadius * 2)
             Destroy(gameObject);
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Sin(Time.time * 30f));
@@ -48,7 +38,13 @@ public class MovingFragment : MonoBehaviour
         vertical_ = Hexagon.RandomInCircle(IslandManager.Inst.BarrierRadius + 2);
         Vector3 pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_);
         pnt.y = outerRadius;
-        Debug.Log("Fragment coordinates: " + vertical_.ToString());
+        if (Hexagon.Length(vertical_) <= IslandManager.Inst.BarrierRadius + 1)
+        {
+            shadow = Instantiate(Shadow);
+            shadow.transform.position = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_);
+            shadow.GetComponent<SpriteRenderer>().sortingOrder = Vertical.SortingOrder() + 1;
+            shadow.transform.SetParent(this.transform);
+        }
         return pnt;
     }
 
@@ -62,5 +58,10 @@ public class MovingFragment : MonoBehaviour
                 Destroy(gameObject);
             }
         }
+    }
+
+    void OnDestroy()
+    {
+        Destroy(shadow.gameObject);
     }
 }

@@ -9,6 +9,8 @@ public class Barrier : MonoBehaviour
     public GameObject[] BarrierPrefabs;
 
     public int Radius = 0;
+    public delegate void RingDestroyedDlg(int radius);
+    public static RingDestroyedDlg RingDestroyed;
 
     private Transform barrierHolder; // hold the barrier stuff
     private IDictionary<int, int> ground = new Dictionary<int, int>(); // number of tiles by length (distance to center)
@@ -41,14 +43,21 @@ public class Barrier : MonoBehaviour
     public void GroundRemoved(Hexagon hex)
     {
         int dist = Hexagon.Length(hex);
-        Debug.Assert(dist == ground.Count - 1, "Removed hex was not in barrier cache");
-        --ground[dist];
-        if (ground[dist] == 0)
-            ground.Remove(dist);
-        if (dist == Radius)
+        if (dist == ground.Count - 1)
         {
-            --Radius;
-            UpdateBarrier();
+            --ground[dist];
+            if (ground[dist] == 0)
+                ground.Remove(dist);
+            if (dist == Radius)
+            {
+                --Radius;
+                UpdateBarrier();
+            }
+        }
+        else if (ground[dist] == 0)
+        { // too bad, the ring was completely destroyed
+            if (RingDestroyed != null)
+                RingDestroyed(dist);
         }
     }
 

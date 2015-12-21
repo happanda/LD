@@ -81,8 +81,11 @@ public class GroundTile : MonoBehaviour
         }
         else if (other.tag == "Meteor")
         {
-            MovingFragment frag = other.GetComponent<MovingFragment>();
-            IslandManager.Inst.Remove(moveHex.hexagon);
+            Meteor meteor = other.GetComponent<Meteor>();
+            if (meteor.Vertical == moveHex.hexagon)
+            {
+                IslandManager.Inst.Remove(moveHex.hexagon);
+            }
         }
     }
 }

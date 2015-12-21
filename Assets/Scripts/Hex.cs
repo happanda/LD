@@ -152,6 +152,12 @@ public class Hexagon : System.IEquatable<Hexagon>
         return new Hexagon(q, r);
     }
 
+    public int SortingOrder()
+    {
+        OffsetCoord coord = OffsetCoord.QoffsetFromCube(OffsetCoord.ODD, this);
+        return -(10 * coord.row + (Mathf.Abs(coord.col) % 2) * 5);
+    }
+
     public override int GetHashCode()
     {
         int hq = q.GetHashCode();

@@ -30,6 +30,11 @@ public class MovableHex : MonoBehaviour
         get { return distance_; }
     }
 
+    void Awake()
+    {
+        Barrier.RingDestroyed += OnRingDestroyed;
+    }
+
     public void Update()
     {
         CacheDistToTarget();
@@ -64,4 +69,9 @@ public class MovableHex : MonoBehaviour
         distance_ = (transform.position - destination_).magnitude;
     }
 
+    private void OnRingDestroyed(int radius)
+    {
+        if (Hexagon.Length(hexagon) > radius)
+            IslandManager.Inst.Remove(hexagon);
+    }
 }

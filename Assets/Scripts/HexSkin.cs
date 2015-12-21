@@ -36,7 +36,7 @@ public class HexSkin : MonoBehaviour
 
     void Update()
     {
-        UpdateSortingOrder(moveHex.hexagon);
+        UpdateSortingOrder();
     }
 
     public void SetLevel(int lvl)
@@ -49,10 +49,9 @@ public class HexSkin : MonoBehaviour
             spriteRenderer.sprite = null;
     }
 
-    public void UpdateSortingOrder(Hexagon hexagon)
+    public void UpdateSortingOrder()
     {
-        OffsetCoord coord = OffsetCoord.QoffsetFromCube(OffsetCoord.ODD, hexagon);
-        spriteRenderer.sortingOrder = -(10 * coord.row + (Mathf.Abs(coord.col) % 2) * 5);
+        spriteRenderer.sortingOrder = moveHex.hexagon.SortingOrder();
     }
 
     private void HighlightKnobs(int count)
