@@ -43,7 +43,7 @@ public class MovingFragment : MonoBehaviour
 
     public Vector3 RandomStart()
     {
-        vertical_ = Hexagon.RandomInCircle(1);//IslandManager.Inst.BarrierRadius + 2);
+        vertical_ = Hexagon.RandomInCircle(IslandManager.Inst.BarrierRadius + 2);
         Vector3 pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_);
         pnt.y = outerRadius;
         //Debug.Log("Fragment coordinates: " + vertical_.ToString());

@@ -81,20 +81,20 @@ public class IslandManager : MonoBehaviour
         mainHex = null;
 
         CreateTile(new Hexagon(0, 0), Tile.Main);
-        //CreateTile(new Hexagon(1, -1), TileExt.Random());
-        //CreateTile(new Hexagon(-1, 1), TileExt.Random());
+        CreateTile(new Hexagon(1, -1), TileExt.Random());
+        CreateTile(new Hexagon(-1, 1), TileExt.Random());
 
         // DEBUG:
-        int map_radius = 2;
-        for (int q = -map_radius; q <= map_radius; q++)
-        {
-            int r1 = Mathf.Max(-map_radius, -q - map_radius);
-            int r2 = Mathf.Min(map_radius, -q + map_radius);
-            for (int r = r1; r <= r2; r++)
-            {
-                CreateTile(new Hexagon(q, r), TileExt.Random());
-            }
-        }
+        //int map_radius = 2;
+        //for (int q = -map_radius; q <= map_radius; q++)
+        //{
+        //    int r1 = Mathf.Max(-map_radius, -q - map_radius);
+        //    int r2 = Mathf.Min(map_radius, -q + map_radius);
+        //    for (int r = r1; r <= r2; r++)
+        //    {
+        //        CreateTile(new Hexagon(q, r), TileExt.Random());
+        //    }
+        //}
     }
 
     void Awake()
@@ -173,7 +173,11 @@ public class IslandManager : MonoBehaviour
         gt.Type = type;
         if (hex.q == 0 && hex.r == 0)
             mainHex = gt;
+
+        int oldRad = BarrierRadius;
         barrier.GroundAdded(hex);
+        if (BarrierRadius > oldRad)
+            mainHex.Upgrade();
         return gt;
     }
 
@@ -202,7 +206,12 @@ public class IslandManager : MonoBehaviour
             GroundTile gt = mh.GetComponent<GroundTile>();
             Destroy(mh.gameObject);
             if (gt != null)
+            {
+                int oldRad = BarrierRadius;
                 barrier.GroundRemoved(hex);
+                if (BarrierRadius < oldRad)
+                    mainHex.Downgrade();
+            }
         }
         else
         {
