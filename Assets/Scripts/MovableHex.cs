@@ -35,6 +35,11 @@ public class MovableHex : MonoBehaviour
         Barrier.RingDestroyed += OnRingDestroyed;
     }
 
+    void OnDestroy()
+    {
+        Barrier.RingDestroyed -= OnRingDestroyed;
+    }
+
     public void Update()
     {
         CacheDistToTarget();
@@ -45,6 +50,7 @@ public class MovableHex : MonoBehaviour
     {
         Hexagon newHex = hexagon.Rotate(left);
         hexagon = newHex;
+        CacheDestination();
     }
 
     protected bool MoveToTarget()

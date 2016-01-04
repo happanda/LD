@@ -43,21 +43,28 @@ public class Barrier : MonoBehaviour
     public void GroundRemoved(Hexagon hex)
     {
         int dist = Hexagon.Length(hex);
-        if (dist == ground.Count - 1)
-        {
-            --ground[dist];
-            if (ground[dist] == 0)
-                ground.Remove(dist);
-            if (dist == Radius)
-            {
-                --Radius;
-                UpdateBarrier();
-            }
-        }
-        else if (ground[dist] == 0)
+        if (!ground.ContainsKey(dist))
+            return;
+
+        --ground[dist];
+        if (ground[dist] == 0)
         { // too bad, the ring was completely destroyed
-            if (RingDestroyed != null)
-                RingDestroyed(dist);
+            var toRemove = ground.Where(x => x.Key > dist).ToArray();
+            foreach (var k in toRemove)
+                ground.Remove(k);
+
+            try
+            {
+                if (RingDestroyed != null)
+                    RingDestroyed(dist);
+            }
+            catch(System.Exception ex)
+            {
+                Debug.LogError(ex.Message);
+            }
+            Radius = dist - 1;
+            UpdateBarrier();
+            ground.Remove(dist);
         }
     }
 
@@ -74,7 +81,9 @@ public class Barrier : MonoBehaviour
     private void RemoveOldBarrier()
     {
         foreach (Transform child in barrierHolder)
+        {
             Destroy(child.gameObject);
+        }
     }
 
     private void DrawBarrier(IList<Hexagon> ring)

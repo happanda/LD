@@ -27,9 +27,6 @@ public class IslandManager : MonoBehaviour
     public float maxFragSpeed = 0.3f;
     public float meteorProbability = 0.07f;
 
-    public delegate void BarrierChanged();
-    public event BarrierChanged barrierChanged;
-
 
     private IDictionary<Tile, GameObject> tilePrefabs = new Dictionary<Tile, GameObject>();
     private IDictionary<Tile, GameObject> fragPrefabs = new Dictionary<Tile, GameObject>();
@@ -84,20 +81,20 @@ public class IslandManager : MonoBehaviour
         mainHex = null;
 
         CreateTile(new Hexagon(0, 0), Tile.Main);
-        CreateTile(new Hexagon(1, -1), TileExt.Random());
-        CreateTile(new Hexagon(-1, 1), TileExt.Random());
+        //CreateTile(new Hexagon(1, -1), TileExt.Random());
+        //CreateTile(new Hexagon(-1, 1), TileExt.Random());
 
         // DEBUG:
-        //int map_radius = 5;
-        //for (int q = -map_radius; q <= map_radius; q++)
-        //{
-        //    int r1 = Mathf.Max(-map_radius, -q - map_radius);
-        //    int r2 = Mathf.Min(map_radius, -q + map_radius);
-        //    for (int r = r1; r <= r2; r++)
-        //    {
-        //        CreateTile(new Hexagon(q, r), TileExt.Random());
-        //    }
-        //}
+        int map_radius = 2;
+        for (int q = -map_radius; q <= map_radius; q++)
+        {
+            int r1 = Mathf.Max(-map_radius, -q - map_radius);
+            int r2 = Mathf.Min(map_radius, -q + map_radius);
+            for (int r = r1; r <= r2; r++)
+            {
+                CreateTile(new Hexagon(q, r), TileExt.Random());
+            }
+        }
     }
 
     void Awake()
@@ -160,7 +157,7 @@ public class IslandManager : MonoBehaviour
                 Remove(hex);
             else
             {
-                Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
+                //Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
                 return null;
             }
         }
@@ -184,7 +181,7 @@ public class IslandManager : MonoBehaviour
     {
         if (map.ContainsKey(hex))
         {
-            Debug.LogError("CreateTile in place of existing tile: " + hex.ToString());
+            //Debug.LogError("CreateEmptyTile in place of existing tile: " + hex.ToString());
             return null;
         }
         GameObject inst = Instantiate(EmptyTilePrefab, Layout.HexagonToPixel(layout, hex), EmptyTilePrefab.transform.rotation) as GameObject;
@@ -203,9 +200,9 @@ public class IslandManager : MonoBehaviour
             MovableHex mh = map[hex];
             map.Remove(hex);
             GroundTile gt = mh.GetComponent<GroundTile>();
+            Destroy(mh.gameObject);
             if (gt != null)
                 barrier.GroundRemoved(hex);
-            Destroy(mh.gameObject);
         }
         else
         {

@@ -38,12 +38,13 @@ public class Meteor : MonoBehaviour
         vertical_ = Hexagon.RandomInCircle(IslandManager.Inst.BarrierRadius + 2);
         Vector3 pnt = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_);
         pnt.y = outerRadius;
+        GetComponent<SpriteRenderer>().sortingOrder = Vertical.SortingOrder() + 1;
         if (Hexagon.Length(vertical_) <= IslandManager.Inst.BarrierRadius + 1)
         {
             shadow = Instantiate(Shadow);
             shadow.transform.position = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_);
             shadow.GetComponent<SpriteRenderer>().sortingOrder = Vertical.SortingOrder() + 1;
-            shadow.transform.SetParent(this.transform);
+            shadow.transform.position = Layout.HexagonToPixel(IslandManager.Inst.layout, vertical_) + shadow.transform.localPosition;
         }
         return pnt;
     }
@@ -62,6 +63,7 @@ public class Meteor : MonoBehaviour
 
     void OnDestroy()
     {
-        Destroy(shadow.gameObject);
+        if (shadow != null)
+            Destroy(shadow.gameObject);
     }
 }

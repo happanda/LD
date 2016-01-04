@@ -17,7 +17,6 @@ public class HexSkin : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("HexSkin.Awake");
         moveHex = GetComponent<MovableHex>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         defaultColor = spriteRenderer.color;

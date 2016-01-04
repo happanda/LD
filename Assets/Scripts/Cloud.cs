@@ -14,5 +14,7 @@ public class Cloud : MonoBehaviour
     {
         Vector3 pos = transform.position;
         transform.position = Vector3.MoveTowards(pos, pos - new Vector3(0f, 100f, 0f), Time.deltaTime * 1f);
+        if (pos.y < -24f)
+            Destroy(gameObject);
     }
 }

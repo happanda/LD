@@ -23,7 +23,6 @@ public class GroundTile : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("MovingHex.Awake");
         Level = 0;
         moveHex = GetComponent<MovableHex>();
         hexSkin = GetComponent<HexSkin>();
@@ -85,6 +84,7 @@ public class GroundTile : MonoBehaviour
             if (meteor.Vertical == moveHex.hexagon)
             {
                 IslandManager.Inst.Remove(moveHex.hexagon);
+                IslandManager.Inst.CreateEmptyTile(moveHex.hexagon);
             }
         }
     }
